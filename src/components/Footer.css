@@ -1,0 +1,152 @@
+.lume-footer {
+  background-color: #ffffff;
+  padding: 100px 0 40px;
+  border-top: 1px solid #f1f5f9;
+  font-family: 'Inter', sans-serif;
+  color: #1a1a1a;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1.2fr 1.5fr;
+  gap: 60px;
+  margin-bottom: 80px;
+}
+
+.footer-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  color: #b3002d;
+  margin-bottom: 20px;
+}
+
+.artisan-bio {
+  font-size: 0.95rem;
+  color: #64748b;
+  line-height: 1.8;
+  max-width: 300px;
+}
+
+.footer-heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 800;
+  margin-bottom: 30px;
+  color: #1a1a1a;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links li {
+  margin-bottom: 15px;
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: #64748b;
+  font-size: 0.95rem;
+  transition: 0.3s;
+}
+
+.footer-links a:hover {
+  color: #b3002d;
+  padding-left: 5px;
+}
+
+/* Studio Details */
+.studio-details p {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+}
+
+.studio-hours {
+  margin-top: 25px;
+  color: #b3002d !important;
+  font-weight: 700;
+  font-size: 0.8rem !important;
+}
+
+/* Newsletter Form */
+.footer-form {
+  display: flex;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 8px;
+  transition: 0.3s;
+}
+
+.footer-form:focus-within {
+  border-color: #b3002d;
+}
+
+.footer-form input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 0.95rem;
+  padding: 10px 0;
+  background: transparent;
+}
+
+.footer-form button {
+  background: none;
+  border: none;
+  color: #b3002d;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+/* Bottom Bar */
+.footer-bottom {
+  padding-top: 40px;
+  border-top: 1px solid #f8fafc;
+}
+
+.bottom-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.policy-links {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.policy-links a {
+  color: #94a3b8;
+  text-decoration: none;
+}
+
+.separator {
+  color: #e2e8f0;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+}
+
+@media (max-width: 576px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+  .bottom-flex {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+}

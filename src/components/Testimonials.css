@@ -1,0 +1,129 @@
+.testimonials-wrapper {
+  padding: 140px 0;
+  background-color: #fdfcf9; /* Lume Pearl */
+  overflow: hidden;
+}
+
+.testimonials-header {
+  text-align: center;
+  margin-bottom: 100px;
+}
+
+.display-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3rem, 6vw, 5rem);
+  color: #1a1a1a;
+  line-height: 1.1;
+  margin: 20px 0;
+}
+
+.text-crimson {
+  color: #b3002d;
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Masonry Layout */
+.masonry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  align-items: start;
+}
+
+.tilt-card-wrapper {
+  transform-style: preserve-3d;
+  cursor: pointer;
+}
+
+.testimonial-card {
+  background: #ffffff;
+  padding: 50px 40px;
+  border-radius: 4px; /* Premium sharp edges */
+  border: 1px solid rgba(179, 0, 45, 0.05);
+  position: relative;
+  height: 100%;
+  transform-style: preserve-3d;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+}
+
+/* Featured Card Logic */
+.tilt-card-wrapper.featured {
+  grid-column: span 2;
+}
+
+.quote-icon {
+  position: absolute;
+  top: -20px;
+  right: 40px;
+  color: #b3002d08;
+  transform: translateZ(60px); /* Highest floating element */
+}
+
+.rev-text {
+  font-size: 1.25rem;
+  line-height: 1.8;
+  color: #1a1a1a;
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 40px;
+  transform: translateZ(30px); /* Text floats in 3D */
+}
+
+.rev-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 30px;
+  border-top: 1px solid #f1f5f9;
+  transform: translateZ(20px);
+}
+
+.user-avatar {
+  width: 40px; height: 40px;
+  background: #f8f1f2;
+  color: #b3002d;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.user-details strong { display: block; font-size: 1rem; color: #1a1a1a; }
+.user-details span { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Artisan Box - 3D Accent */
+.artisan-box {
+  background: #b3002d;
+  color: white;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: none;
+}
+
+.floating-heart {
+  animation: pulse-heart 2s infinite ease-in-out;
+  transform: translateZ(40px);
+}
+
+@keyframes pulse-heart {
+  0% { transform: translateZ(40px) scale(1); }
+  50% { transform: translateZ(40px) scale(1.2); }
+  100% { transform: translateZ(40px) scale(1); }
+}
+
+.artisan-sig {
+  margin-top: 30px;
+  font-family: 'Courier New', monospace;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .masonry-grid { grid-template-columns: 1fr; }
+  .tilt-card-wrapper.featured { grid-column: span 1; }
+}

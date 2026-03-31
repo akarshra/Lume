@@ -1,0 +1,151 @@
+.bill-logo-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.bill-brand-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.bill-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-name {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.brand-tagline {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent-gold);
+}
+
+.bill-brand-details {
+  text-align: right;
+  font-size: 0.75rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+.bill-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #f0fdf4;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+}
+
+.success-icon { color: #16a34a; }
+
+.status-text h2 {
+  font-size: 1.1rem;
+  color: #166534;
+  margin: 0;
+}
+
+.status-text p {
+  font-size: 0.8rem;
+  color: #15803d;
+  margin: 0;
+}
+
+.bill-table {
+  margin: 25px 0;
+  border-top: 1px solid #eee;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 2fr 0.5fr 1fr;
+  padding: 12px 0;
+  border-bottom: 1px solid #fafafa;
+  font-size: 0.9rem;
+}
+
+.table-row.head {
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.item-title small {
+  color: #999;
+  font-weight: 400;
+}
+
+.bill-financials {
+  background: #fdfcf9;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.f-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.f-total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--primary-dark);
+}
+
+.bill-guarantee {
+  margin-top: 25px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.btn-download {
+  width: 100%;
+  margin-top: 25px;
+  padding: 15px;
+  background: var(--primary-dark);
+  color: white;
+  border-radius: 12px;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-download:hover { background: #000; }
+
+@media print {
+  .bill-content { box-shadow: none !important; border: none !important; padding: 0 !important; }
+  .btn-download, .modal-close { display: none !important; }
+}
