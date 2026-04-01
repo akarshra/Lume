@@ -1,0 +1,28 @@
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 40px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    flex-direction: column-reverse; /* Summary on top */
+    display: flex;
+  }
+}
+
+.checkout-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .checkout-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

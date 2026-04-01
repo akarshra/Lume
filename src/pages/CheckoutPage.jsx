@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { CreditCard, Banknote, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import StripeCheckoutForm from '../components/StripeCheckoutForm';
 import { addOrder } from '../services/api';
+import './CheckoutPage.css';
 
 const stripePromise = loadStripe('pk_test_51T4bcOLkWChg5JeJdTPGkNttxonAEO6SuRYpKMuxggvRKXRXRCbaxwgp9wBwwy7anqdJrck1wPNXmXE9vekGtZk700Ob1bx4pL');
 
 const CheckoutPage = () => {
   const { cartItems, getCartTotal, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({ 
@@ -54,10 +57,11 @@ const CheckoutPage = () => {
       address: formData.address || "",
       paymentMethod: formData.paymentMethod,
       item: itemSummary,
-      amount: totalAmountStr,
+      amount: grandTotal,
       status: "Pending",
       type: "Cart Order",
-      platform: "direct"
+      platform: "direct",
+      user_id: user ? user.id : null
     };
     
     try {
@@ -106,7 +110,7 @@ const CheckoutPage = () => {
           <ArrowLeft size={18} /> Back to Cart
         </Link>
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'auto 380px', gap: '40px', alignItems: 'start' }}>
+        <div className="checkout-layout">
           
           <div className="glass-panel" style={{ padding: '40px', background: 'white' }}>
             <h1 className="title-secondary" style={{ marginBottom: '8px', fontSize: '2rem' }}>Complete Your Order</h1>
@@ -134,7 +138,7 @@ const CheckoutPage = () => {
               </div>
             ) : (
               <form onSubmit={handleInitialFormSubmit} className="checkout-form">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div className="checkout-form-grid">
                   <div className="form-group" style={{ marginBottom: '20px' }}>
                     <label htmlFor="name" style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: '#555' }}>Full Name</label>
                     <input 
@@ -179,7 +183,7 @@ const CheckoutPage = () => {
 
                 <div className="form-group" style={{ marginBottom: '32px' }}>
                   <label style={{ display: 'block', marginBottom: '12px', fontSize: '0.9rem', color: '#555', fontWeight: 'bold' }}>Select Payment Method</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="checkout-form-grid">
                     <label style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', border: formData.paymentMethod === 'stripe' ? '2px solid var(--primary-dark)' : '1px solid #ddd', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', background: formData.paymentMethod === 'stripe' ? '#fafafa' : '#fff' }}>
                       <input 
                         type="radio" 

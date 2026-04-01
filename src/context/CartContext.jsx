@@ -56,7 +56,8 @@ export const CartProvider = ({ children }) => {
 
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => {
-      const priceVal = parseInt(item.price.replace(/\D/g, ''), 10);
+      const priceStr = String(item.price);
+      const priceVal = parseInt(priceStr.replace(/\D/g, ''), 10);
       return total + (priceVal * item.quantity);
     }, 0);
   };

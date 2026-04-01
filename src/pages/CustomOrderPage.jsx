@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Send, UploadCloud, CreditCard, ArrowLeft } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { addOrder } from '../services/api';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -11,6 +12,7 @@ const stripePromise = loadStripe('pk_test_51T4bcOLkWChg5JeJdTPGkNttxonAEO6SuRYpK
 
 const CustomOrderPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -63,10 +65,11 @@ const CustomOrderPage = () => {
       customer: formData.name,
       phone: formData.phone,
       item: `Custom: ${formData.size}`,
-      amount: "₹1,000",
+      amount: 1000,
       status: "Paid",
       paymentMethod: "stripe",
-      type: `Custom Request (Intent: ${paymentIntentId.slice(0, 8)})`
+      type: `Custom Request (Intent: ${paymentIntentId.slice(0, 8)})`,
+      user_id: user ? user.id : null
     };
     
     try {
@@ -87,9 +90,10 @@ const CustomOrderPage = () => {
       customer: formData.name,
       phone: formData.phone,
       item: `Custom: ${formData.size}`,
-      amount: "TBD",
+      amount: 0,
       status: "Pending",
-      type: "Custom Request"
+      type: "Custom Request",
+      user_id: user ? user.id : null
     };
     
     try {

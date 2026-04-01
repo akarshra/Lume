@@ -11,7 +11,9 @@ import CheckoutPage from './pages/CheckoutPage';
 import SuccessPage from './pages/SuccessPage';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
+import AccountPage from './pages/AccountPage';
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
 import './App.css';
 
 function MainLayout() {
@@ -33,6 +35,7 @@ function MainLayout() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/success" element={<SuccessPage />} />
+          <Route path="/account" element={<AccountPage />} />
         </Routes>
       </main>
       {!isAdmin && <Footer />}
@@ -42,11 +45,13 @@ function MainLayout() {
 
 function App() {
   return (
-    <CartProvider>
-      <Router>
-        <MainLayout />
-      </Router>
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <MainLayout />
+        </Router>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

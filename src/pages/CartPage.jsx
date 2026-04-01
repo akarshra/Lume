@@ -36,7 +36,7 @@ const CartPage = () => {
       address: customerDetails.address || "",
       paymentMethod: customerDetails.paymentMethod || "cod",
       item: itemSummary,
-      amount: totalAmountStr,
+      amount: grandTotal,
       status: "Pending",
       type: "Cart Order",
       platform: modalState.platform
@@ -100,7 +100,7 @@ const CartPage = () => {
               <div className="cart-item-details">
                 <span className="cart-item-category">{item.category}</span>
                 <h3 className="cart-item-title">{item.name}</h3>
-                <p className="cart-item-price">{item.price}</p>
+                <p className="cart-item-price">{String(item.price).includes('₹') ? item.price : `₹${Number(item.price).toLocaleString('en-IN')}`}</p>
               </div>
               <div className="cart-item-actions">
                 <div className="quantity-controls">

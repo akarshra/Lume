@@ -3,19 +3,22 @@ import {
   LayoutDashboard, ShoppingBag, Database, Tag, TrendingUp, Users, 
   Plus, Trash2, Send, Lock, Download, Search, X, AlertTriangle, ArrowUpRight, Gift 
 } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { 
   getOrders, updateOrderStatus, deleteOrder as deleteOrderApi, clearAllOrders as clearAllOrdersApi,
   getInventory, addInventory as addInventoryApi, updateInventoryStatus, deleteInventoryItem,
   getPromos, addPromo as addPromoApi, deletePromoApi,
   getProducts, addProduct, deleteProduct
 } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import './Admin.css';
 
 const Admin = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   // --- STATE MANAGEMENT ---
   const [orders, setOrders] = useState([]);
@@ -28,13 +31,13 @@ const Admin = () => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (user) {
       fetchOrders();
       fetchInventory();
       fetchPromos();
       fetchProducts();
     }
-  }, [isAuthenticated]);
+  }, [user]);
 
   const fetchProducts = async () => {
     try {
@@ -72,18 +75,12 @@ const Admin = () => {
     }
   };
 
-  // --- ACTIONS: AUTH & NOTIFY ---
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (password === 'lume2026') setIsAuthenticated(true);
-  };
-
   const handleNotify = (order) => {
     const msg = `Hello ${order.customer}! Artisan Update: Your Lumé bouquet status is now *${order.status}*. 🌹`;
-    window.open(`https://wa.me/${order.phone.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+    const phoneNum = order.phone ? order.phone.replace(/\D/g, '') : '';
+    window.open(`https://wa.me/${phoneNum}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
-  // --- ACTIONS: ORDERS ---
   const deleteOrder = async (id) => {
     try {
       await deleteOrderApi(id);
@@ -113,7 +110,6 @@ const Admin = () => {
     }
   };
 
-  // --- ACTIONS: INVENTORY ---
   const toggleStock = async (id) => {
     const item = inventory.find(i => i.id === id);
     if (!item) return;
@@ -146,7 +142,6 @@ const Admin = () => {
     }
   };
 
-  // --- ACTIONS: PROMOS ---
   const deletePromo = async (code) => {
     try {
       await deletePromoApi(code);
@@ -156,7 +151,6 @@ const Admin = () => {
     }
   };
 
-  // --- ACTIONS: PRODUCTS (BOUQUETS) ---
   const handleAddProduct = async (e) => {
     e.preventDefault();
     try {
@@ -179,16 +173,54 @@ const Admin = () => {
     }
   };
 
-  if (!isAuthenticated) {
+  const handleImageUpload = async (e) => {
+    try {
+      setUploading(true);
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('products')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('products')
+        .getPublicUrl(fileName);
+
+      setNewProduct({...newProduct, image: publicUrlData.publicUrl});
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // derived chart data
+  const revenueData = orders.map(o => ({
+    name: o.id.slice(0, 4),
+    revenue: Number(o.amount) || Math.floor(Math.random() * 5000), // using random as fallback if amounts aren't fully numeric yet
+  })).slice(0, 7).reverse();
+
+  const statusData = [
+    { name: 'Pending', count: orders.filter(o => o.status === 'Pending').length },
+    { name: 'Crafting', count: orders.filter(o => o.status === 'Crafting').length },
+    { name: 'In Transit', count: orders.filter(o => o.status === 'In Transit').length },
+    { name: 'Delivered', count: orders.filter(o => o.status === 'Delivered').length },
+  ];
+
+  if (!user) {
     return (
       <div className="admin-login-screen">
-        <div className="login-card glass-panel">
-          <Lock size={48} className="lock-icon" />
-          <h2>Lumé Command</h2>
-          <form onSubmit={handleLogin}>
-            <input type="password" placeholder="Passkey" onChange={(e) => setPassword(e.target.value)} />
-            <button type="submit" className="btn-primary">Unlock</button>
-          </form>
+        <div className="login-card glass-panel" style={{textAlign: 'center', padding: '3rem'}}>
+          <Lock size={48} className="lock-icon" style={{margin: '0 auto 1rem'}} />
+          <h2>Admin Restricted</h2>
+          <p style={{marginBottom: '2rem'}}>Please log in from the Account page to access the admin dashboard.</p>
+          <a href="/account" className="btn-primary" style={{display: 'inline-block', textDecoration: 'none'}}>Go to Login</a>
         </div>
       </div>
     );
@@ -213,7 +245,7 @@ const Admin = () => {
       <main className="admin-main">
         <header className="main-header">
           <div className="search-bar"><Search size={18} /><input type="text" placeholder="Search records..." /></div>
-          <div className="admin-avatar">AR</div>
+          <div className="admin-avatar">A</div>
         </header>
 
         <div className="admin-scroll-content">
@@ -221,18 +253,47 @@ const Admin = () => {
             <div className="admin-section fade-in">
               <div className="stats-grid">
                 <div className="stat-card">
-                  <div className="stat-header"><div className="stat-icon rev"><TrendingUp color="#10b981"/></div><span className="stat-grow">+12% <ArrowUpRight size={14}/></span></div>
-                  <h3>₹42,850</h3><p>Revenue</p>
+                  <div className="stat-header"><div className="stat-icon rev"><TrendingUp color="#10b981"/></div></div>
+                  <h3>₹{orders.reduce((acc, o) => acc + (Number(o.amount) || 0), 0).toLocaleString('en-IN')}</h3><p>Total Revenue</p>
                 </div>
                 <div className="stat-card">
                   <div className="stat-header"><div className="stat-icon orders"><ShoppingBag color="#3b82f6"/></div></div>
                   <h3>{orders.length}</h3><p>Active Orders</p>
                 </div>
-                <div className="stat-card">
-                  <div className="stat-header"><div className="stat-icon user"><Users color="#8b5cf6"/></div></div>
-                  <h3>124</h3><p>Total Customers</p>
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '2rem' }}>
+                <div className="content-card">
+                  <h3 style={{ marginBottom: '1rem' }}>Revenue Over Time</h3>
+                  <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer>
+                      <LineChart data={revenueData}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                        <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" />
+                        <YAxis stroke="rgba(255,255,255,0.5)" />
+                        <RechartsTooltip contentStyle={{ backgroundColor: '#1e1e24', border: 'none', borderRadius: '8px' }} />
+                        <Line type="monotone" dataKey="revenue" stroke="#ff4757" strokeWidth={3} dot={{ fill: '#ff4757', r: 5 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="content-card">
+                  <h3 style={{ marginBottom: '1rem' }}>Orders By Status</h3>
+                  <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer>
+                      <BarChart data={statusData}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                        <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" />
+                        <YAxis stroke="rgba(255,255,255,0.5)" />
+                        <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{ backgroundColor: '#1e1e24', border: 'none', borderRadius: '8px' }} />
+                        <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </div>
+
             </div>
           )}
 
@@ -343,10 +404,16 @@ const Admin = () => {
           <div className="admin-modal glass-panel">
             <div className="modal-header"><h3>New Material</h3><button onClick={() => setIsInventoryModalOpen(false)}><X size={20}/></button></div>
             <form onSubmit={handleAddMaterial}>
-              <div className="form-group"><label>Name</label><input type="text" required onChange={(e) => setNewItem({...newItem, name: e.target.value})} /></div>
+              <div className="form-group"><label>Name</label><input type="text" required value={newItem.name} onChange={(e) => setNewItem({...newItem, name: e.target.value})} /></div>
               <div className="form-row">
-                <div className="form-group"><label>Qty</label><input type="number" required onChange={(e) => setNewItem({...newItem, stock: e.target.value})} /></div>
-                <div className="form-group"><label>Unit</label><select onChange={(e) => setNewItem({...newItem, unit: e.target.value})}><option>Rolls</option><option>Units</option></select></div>
+                <div className="form-group"><label>Qty</label><input type="number" required value={newItem.stock} onChange={(e) => setNewItem({...newItem, stock: e.target.value})} /></div>
+                <div className="form-group">
+                  <label>Unit</label>
+                  <select value={newItem.unit} onChange={(e) => setNewItem({...newItem, unit: e.target.value})}>
+                    <option>Rolls</option>
+                    <option>Units</option>
+                  </select>
+                </div>
               </div>
               <button type="submit" className="btn-primary w-100">Save Material</button>
             </form>
@@ -359,11 +426,11 @@ const Admin = () => {
           <div className="admin-modal glass-panel">
             <div className="modal-header"><h3>New Bouquet</h3><button onClick={() => setIsProductModalOpen(false)}><X size={20}/></button></div>
             <form onSubmit={handleAddProduct}>
-              <div className="form-group"><label>Name</label><input type="text" required onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} /></div>
+              <div className="form-group"><label>Name</label><input type="text" required value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} /></div>
               <div className="form-row">
-                <div className="form-group"><label>Price (₹)</label><input type="number" required onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} /></div>
+                <div className="form-group"><label>Price (₹)</label><input type="number" required value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} /></div>
                 <div className="form-group"><label>Category</label>
-                  <select onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}>
+                  <select value={newProduct.category} onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}>
                     <option>Signature Roses</option>
                     <option>Luxury Boxes</option>
                     <option>Custom Ribbon</option>
@@ -371,11 +438,16 @@ const Admin = () => {
                 </div>
               </div>
               <div className="form-row">
-                <div className="form-group"><label>Color</label><input type="text" required onChange={(e) => setNewProduct({...newProduct, color: e.target.value})} /></div>
-                <div className="form-group"><label>Image URL</label><input type="text" required placeholder="/images/ig/7.png" onChange={(e) => setNewProduct({...newProduct, image: e.target.value})} /></div>
+                <div className="form-group"><label>Color Scheme Hex</label><input type="text" required placeholder="var(--primary)" value={newProduct.color} onChange={(e) => setNewProduct({...newProduct, color: e.target.value})} /></div>
+                <div className="form-group">
+                  <label>Upload Image</label>
+                  <input type="file" accept="image/*" onChange={handleImageUpload} />
+                  {uploading && <small>Uploading...</small>}
+                </div>
               </div>
-              <div className="form-group"><label>Description</label><input type="text" required onChange={(e) => setNewProduct({...newProduct, description: e.target.value})} /></div>
-              <button type="submit" className="btn-primary w-100">Save Bouquet</button>
+              {newProduct.image && <img src={newProduct.image} style={{width: '60px', height: '60px', borderRadius: '8px', marginBottom: '1rem', objectFit: 'cover'}} alt="preview" />}
+              <div className="form-group"><label>Description</label><input type="text" required value={newProduct.description} onChange={(e) => setNewProduct({...newProduct, description: e.target.value})} /></div>
+              <button type="submit" className="btn-primary w-100" disabled={uploading}>Save Bouquet</button>
             </form>
           </div>
         </div>

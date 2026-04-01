@@ -65,7 +65,7 @@ const Gallery = ({ limit }) => {
       address: customerDetails.address || "",
       paymentMethod: customerDetails.paymentMethod || "cod",
       item: product.name,
-      amount: totalAmountStr,
+      amount: grandTotal,
       status: "Pending",
       type: "Standard",
       platform: modalState.platform

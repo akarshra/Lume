@@ -1,207 +1,142 @@
-const API_URL = 'http://localhost:5001/api';
+import { supabase } from '../lib/supabase';
 
+// --- Orders API ---
 export const getOrders = async () => {
-  try {
-    const response = await fetch(`${API_URL}/orders`);
-    if (!response.ok) throw new Error('Failed to fetch orders');
-    return await response.json();
-  } catch (error) {
+  const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+  if (error) {
     console.error('API Error:', error);
     return [];
   }
+  return data;
 };
 
 export const addOrder = async (orderData) => {
-  try {
-    const response = await fetch(`${API_URL}/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(orderData),
-    });
-    if (!response.ok) throw new Error('Failed to add order');
-    return await response.json();
-  } catch (error) {
+  const { type, platform, ...cleanOrderData } = orderData;
+  const { data, error } = await supabase.from('orders').insert([cleanOrderData]).select();
+  if (error) {
     console.error('API Error:', error);
     throw error;
   }
+  return data[0];
 };
 
 export const updateOrderStatus = async (id, status) => {
-  try {
-    const response = await fetch(`${API_URL}/orders/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ status }),
-    });
-    if (!response.ok) throw new Error('Failed to update order status');
-    return await response.json();
-  } catch (error) {
+  const { data, error } = await supabase.from('orders').update({ status }).eq('id', id).select();
+  if (error) {
     console.error('API Error:', error);
     throw error;
   }
+  return data[0];
 };
 
 export const deleteOrder = async (id) => {
-  try {
-    const response = await fetch(`${API_URL}/orders/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) throw new Error('Failed to delete order');
-    return await response.json();
-  } catch (error) {
+  const { error } = await supabase.from('orders').delete().eq('id', id);
+  if (error) {
     console.error('API Error:', error);
     throw error;
   }
+  return { message: 'Order deleted' };
 };
 
 export const clearAllOrders = async () => {
-  try {
-    const response = await fetch(`${API_URL}/orders`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) throw new Error('Failed to clear orders');
-    return await response.json();
-  } catch (error) {
+  // Supabase requires a filter for deletes, so we delete where id is not null
+  const { error } = await supabase.from('orders').delete().neq('id', 'clear_all');
+  if (error) {
     console.error('API Error:', error);
     throw error;
   }
+  return { message: 'All orders deleted' };
 };
 
 // --- Inventory API ---
 export const getInventory = async () => {
-  try {
-    const response = await fetch(`${API_URL}/inventory`);
-    if (!response.ok) throw new Error('Failed to fetch inventory');
-    return await response.json();
-  } catch (error) {
+  const { data, error } = await supabase.from('inventory').select('*').order('created_at', { ascending: true });
+  if (error) {
     console.error('API Error:', error);
     return [];
   }
+  return data;
 };
 
-export const addInventory = async (data) => {
-  try {
-    const response = await fetch(`${API_URL}/inventory`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error('Failed to add inventory');
-    return await response.json();
-  } catch (error) {
+export const addInventory = async (dataInput) => {
+  const { data, error } = await supabase.from('inventory').insert([dataInput]).select();
+  if (error) {
     console.error('API Error:', error);
     throw error;
   }
+  return data[0];
 };
 
 export const updateInventoryStatus = async (id, inStock) => {
-  try {
-    const response = await fetch(`${API_URL}/inventory/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ inStock }),
-    });
-    if (!response.ok) throw new Error('Failed to update inventory status');
-    return await response.json();
-  } catch (error) {
+  const { data, error } = await supabase.from('inventory').update({ inStock }).eq('id', id).select();
+  if (error) {
     console.error('API Error:', error);
     throw error;
   }
+  return data[0];
 };
 
 export const deleteInventoryItem = async (id) => {
-  try {
-    const response = await fetch(`${API_URL}/inventory/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) throw new Error('Failed to delete inventory');
-    return await response.json();
-  } catch (error) {
+  const { error } = await supabase.from('inventory').delete().eq('id', id);
+  if (error) {
     console.error('API Error:', error);
     throw error;
   }
+  return { message: 'Inventory deleted' };
 };
 
 // --- Promo Codes API ---
 export const getPromos = async () => {
-  try {
-    const response = await fetch(`${API_URL}/promos`);
-    if (!response.ok) throw new Error('Failed to fetch promos');
-    return await response.json();
-  } catch (error) {
+  const { data, error } = await supabase.from('promocodes').select('*').order('created_at', { ascending: true });
+  if (error) {
     console.error('API Error:', error);
     return [];
   }
+  return data;
 };
 
-export const addPromo = async (data) => {
-  try {
-    const response = await fetch(`${API_URL}/promos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error('Failed to add promo');
-    return await response.json();
-  } catch (error) {
+export const addPromo = async (dataInput) => {
+  const { data, error } = await supabase.from('promocodes').insert([dataInput]).select();
+  if (error) {
     console.error('API Error:', error);
     throw error;
   }
+  return data[0];
 };
 
 export const deletePromoApi = async (code) => {
-  try {
-    const response = await fetch(`${API_URL}/promos/${code}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) throw new Error('Failed to delete promo');
-    return await response.json();
-  } catch (error) {
+  const { error } = await supabase.from('promocodes').delete().eq('code', code);
+  if (error) {
     console.error('API Error:', error);
     throw error;
   }
+  return { message: 'Promo deleted' };
 };
 
 // --- Products API ---
 export const getProducts = async () => {
-  try {
-    const response = await fetch(`${API_URL}/products`);
-    if (!response.ok) throw new Error('Failed to fetch products');
-    return await response.json();
-  } catch (error) {
+  const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: true });
+  if (error) {
     console.error('API Error:', error);
     return [];
   }
+  return data;
 };
 
-export const addProduct = async (data) => {
-  try {
-    const response = await fetch(`${API_URL}/products`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error('Failed to add product');
-    return await response.json();
-  } catch (error) {
+export const addProduct = async (dataInput) => {
+  const { data, error } = await supabase.from('products').insert([dataInput]).select();
+  if (error) {
     console.error('API Error:', error);
     throw error;
   }
+  return data[0];
 };
 
 export const deleteProduct = async (id) => {
-  try {
-    const response = await fetch(`${API_URL}/products/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) throw new Error('Failed to delete product');
-    return await response.json();
-  } catch (error) {
+  const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) {
     console.error('API Error:', error);
     throw error;
   }
+  return { message: 'Product deleted' };
 };
