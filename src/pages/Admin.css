@@ -180,6 +180,7 @@
 .form-group input, .form-group select {
   padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px;
   font-size: 0.95rem; outline: none; transition: 0.2s; background: white;
+  width: 100%; box-sizing: border-box;
 }
 .form-group input:focus, .form-group select:focus { border-color: #b3002d; box-shadow: 0 0 0 3px rgba(179, 0, 45, 0.1); }
 .w-100 { width: 100%; }

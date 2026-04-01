@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, ShoppingBag, Database, Tag, TrendingUp, Users, 
-  Plus, Trash2, Send, Lock, Download, Search, X, AlertTriangle, ArrowUpRight 
+  Plus, Trash2, Send, Lock, Download, Search, X, AlertTriangle, ArrowUpRight, Gift 
 } from 'lucide-react';
 import { 
   getOrders, updateOrderStatus, deleteOrder as deleteOrderApi, clearAllOrders as clearAllOrdersApi,
   getInventory, addInventory as addInventoryApi, updateInventoryStatus, deleteInventoryItem,
-  getPromos, addPromo as addPromoApi, deletePromoApi
+  getPromos, addPromo as addPromoApi, deletePromoApi,
+  getProducts, addProduct, deleteProduct
 } from '../services/api';
 import './Admin.css';
 
@@ -20,15 +21,29 @@ const Admin = () => {
   const [orders, setOrders] = useState([]);
   const [inventory, setInventory] = useState([]);
   const [promoCodes, setPromoCodes] = useState([]);
+  const [products, setProducts] = useState([]);
+  
   const [newItem, setNewItem] = useState({ name: '', stock: '', unit: 'Rolls' });
+  const [newProduct, setNewProduct] = useState({ name: '', category: 'Signature Roses', price: '', description: '', image: '', color: '', igId: '' });
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchOrders();
       fetchInventory();
       fetchPromos();
+      fetchProducts();
     }
   }, [isAuthenticated]);
+
+  const fetchProducts = async () => {
+    try {
+      const data = await getProducts();
+      setProducts(data);
+    } catch (error) {
+      console.error("Failed to fetch products", error);
+    }
+  };
 
   const fetchOrders = async () => {
     try {
@@ -141,6 +156,29 @@ const Admin = () => {
     }
   };
 
+  // --- ACTIONS: PRODUCTS (BOUQUETS) ---
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = { ...newProduct, price: parseFloat(newProduct.price) };
+      const addedItem = await addProduct(payload);
+      setProducts([...products, addedItem]);
+      setNewProduct({ name: '', category: 'Signature Roses', price: '', description: '', image: '', color: '', igId: '' });
+      setIsProductModalOpen(false);
+    } catch (error) {
+      console.error("Error adding product", error);
+    }
+  };
+
+  const deleteProductObj = async (id) => {
+    try {
+      await deleteProduct(id);
+      setProducts(products.filter(p => p.id !== id));
+    } catch (error) {
+      console.error("Error deleting product", error);
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="admin-login-screen">
@@ -167,6 +205,7 @@ const Admin = () => {
           <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => setActiveTab('overview')}><LayoutDashboard size={20}/> Overview</button>
           <button className={activeTab === 'orders' ? 'active' : ''} onClick={() => setActiveTab('orders')}><ShoppingBag size={20}/> Orders</button>
           <button className={activeTab === 'inventory' ? 'active' : ''} onClick={() => setActiveTab('inventory')}><Database size={20}/> Inventory</button>
+          <button className={activeTab === 'bouquets' ? 'active' : ''} onClick={() => setActiveTab('bouquets')}><Gift size={20}/> Bouquets</button>
           <button className={activeTab === 'promos' ? 'active' : ''} onClick={() => setActiveTab('promos')}><Tag size={20}/> Marketing</button>
         </nav>
       </aside>
@@ -257,6 +296,31 @@ const Admin = () => {
             </div>
           )}
 
+          {activeTab === 'bouquets' && (
+            <div className="admin-section fade-in">
+              <div className="section-header">
+                <h2>Bouquets Catalog</h2>
+                <button className="btn-primary" onClick={() => setIsProductModalOpen(true)}><Plus size={18}/> Add Bouquet</button>
+              </div>
+              <div className="content-card">
+                <table className="admin-table">
+                  <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    {products.map(p => (
+                      <tr key={p.id}>
+                        <td><img src={p.image} alt={p.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} /></td>
+                        <td><strong>{p.name}</strong><br/><small>{p.color}</small></td>
+                        <td>{p.category}</td>
+                        <td>{String(p.price).includes('₹') ? p.price : `₹${Number(p.price).toLocaleString('en-IN')}`}</td>
+                        <td><button className="btn-icon-delete" onClick={() => deleteProductObj(p.id)}><Trash2 size={16}/></button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'promos' && (
             <div className="admin-section fade-in">
               <div className="section-header"><h2>Promo Codes</h2></div>
@@ -285,6 +349,33 @@ const Admin = () => {
                 <div className="form-group"><label>Unit</label><select onChange={(e) => setNewItem({...newItem, unit: e.target.value})}><option>Rolls</option><option>Units</option></select></div>
               </div>
               <button type="submit" className="btn-primary w-100">Save Material</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isProductModalOpen && (
+        <div className="admin-modal-overlay">
+          <div className="admin-modal glass-panel">
+            <div className="modal-header"><h3>New Bouquet</h3><button onClick={() => setIsProductModalOpen(false)}><X size={20}/></button></div>
+            <form onSubmit={handleAddProduct}>
+              <div className="form-group"><label>Name</label><input type="text" required onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} /></div>
+              <div className="form-row">
+                <div className="form-group"><label>Price (₹)</label><input type="number" required onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} /></div>
+                <div className="form-group"><label>Category</label>
+                  <select onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}>
+                    <option>Signature Roses</option>
+                    <option>Luxury Boxes</option>
+                    <option>Custom Ribbon</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group"><label>Color</label><input type="text" required onChange={(e) => setNewProduct({...newProduct, color: e.target.value})} /></div>
+                <div className="form-group"><label>Image URL</label><input type="text" required placeholder="/images/ig/7.png" onChange={(e) => setNewProduct({...newProduct, image: e.target.value})} /></div>
+              </div>
+              <div className="form-group"><label>Description</label><input type="text" required onChange={(e) => setNewProduct({...newProduct, description: e.target.value})} /></div>
+              <button type="submit" className="btn-primary w-100">Save Bouquet</button>
             </form>
           </div>
         </div>

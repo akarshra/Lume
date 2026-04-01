@@ -7,6 +7,8 @@ import TestimonialsPage from './pages/TestimonialsPage';
 import ContactPage from './pages/ContactPage';
 import Admin from './pages/Admin';
 import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import SuccessPage from './pages/SuccessPage';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
 import { CartProvider } from './context/CartContext';
@@ -29,6 +31,8 @@ function MainLayout() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/success" element={<SuccessPage />} />
         </Routes>
       </main>
       {!isAdmin && <Footer />}

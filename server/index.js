@@ -4,15 +4,107 @@ import { open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import Stripe from 'stripe';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
 app.use(cors());
 app.use(express.json());
+
+// Stripe Checkout Endpoint
+app.post('/api/create-checkout-session', async (req, res) => {
+  try {
+    const { items, isCustom } = req.body;
+    let line_items = [];
+    
+    if (isCustom) {
+      line_items = [{
+        price_data: { currency: 'inr', product_data: { name: 'Custom Bouquet Deposit' }, unit_amount: 100000 },
+        quantity: 1
+      }];
+    } else {
+      let subtotal = 0;
+      line_items = items.map(item => {
+        const itemPrice = parseInt(item.price.replace(/[^0-9]/g, ''), 10);
+        subtotal += itemPrice * (item.quantity || 1);
+        return {
+          price_data: {
+            currency: 'inr',
+            product_data: { name: item.name },
+            unit_amount: itemPrice * 100,
+          },
+          quantity: item.quantity || 1,
+        };
+      });
+
+      const gst = Math.round(subtotal * 0.18);
+      line_items.push({
+        price_data: { currency: 'inr', product_data: { name: 'GST (18%)' }, unit_amount: gst * 100 },
+        quantity: 1,
+      });
+
+      line_items.push({
+        price_data: { currency: 'inr', product_data: { name: 'Handling & Processing' }, unit_amount: 100 * 100 },
+        quantity: 1,
+      });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items,
+      mode: 'payment',
+      success_url: 'http://localhost:5173/success?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'http://localhost:5173/cart',
+    });
+
+    res.json({ id: session.id, url: session.url });
+  } catch (error) {
+    console.error('Stripe error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Stripe Payment Intent Endpoint (For unified one-page elements)
+app.post('/api/create-payment-intent', async (req, res) => {
+  try {
+    const { items, isCustom } = req.body;
+    let amount = 0;
+    
+    if (isCustom) {
+      amount = 1000 * 100; // 1000 INR deposit
+    } else {
+      let subtotal = 0;
+      items.forEach(item => {
+        const itemPrice = parseInt(item.price.replace(/[^0-9]/g, ''), 10);
+        subtotal += itemPrice * (item.quantity || 1);
+      });
+      const gst = Math.round(subtotal * 0.18);
+      const delivery = 100;
+      amount = (subtotal + gst + delivery) * 100; // total in paise
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount,
+      currency: 'inr',
+      // For Indian regulations normally require exports or shipping address, 
+      // but let's just use basic flow with automatic methods
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+
+    res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    console.error('Stripe PaymentIntent error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 let db;
 
@@ -77,10 +169,13 @@ async function initDB() {
   const prodCount = await db.get('SELECT COUNT(*) as count FROM products');
   if (prodCount.count === 0) {
     const defaultProducts = [
+      { name: "Midnight Sparkle Rose", category: "Anniversary", price: "₹1,599", description: "Elegant dark tones intertwined with sparkly ribbons for a magical evening.", image: "/images/ig/1.webp", color: "var(--primary-dark)", igId: "l_u_m_eest._2026" },
+      { name: "Crimson Delight", category: "Romantic", price: "₹1,199", description: "Vibrant crimson ribbons carefully arranged to express deep affection.", image: "/images/ig/2.webp", color: "var(--primary)", igId: "l_u_m_eest._2026" },
       { name: "Classic Anniversary Rose", category: "Anniversary", price: "₹1,299", description: "Deep red and blush pink ribbons woven into 24 premium blooming roses.", image: "/images/ig/3.webp", color: "var(--primary-dark)", igId: "l_u_m_eest._2026" },
       { name: "Golden Proposal", category: "Proposal", price: "₹2,499", description: "Luxurious soft gold and cream ribbon roses, arranged in our signature premium box.", image: "/images/ig/4.webp", color: "var(--accent-gold)", igId: "l_u_m_eest._2026" },
       { name: "Lavender Dreams", category: "Birthday", price: "₹999", description: "A sweet combination of pastel lavender and white ribbons for a perfect birthday gift.", image: "/images/ig/5.webp", color: "var(--accent)", igId: "l_u_m_eest._2026" },
-      { name: "Soft Blush Elegance", category: "Custom", price: "From ₹1,499", description: "Customized pastel ribbons blending perfectly for weddings and special moments.", image: "/images/ig/6.webp", color: "var(--primary)", igId: "l_u_m_eest._2026" }
+      { name: "Soft Blush Elegance", category: "Custom", price: "From ₹1,499", description: "Customized pastel ribbons blending perfectly for weddings and special moments.", image: "/images/ig/6.webp", color: "var(--primary)", igId: "l_u_m_eest._2026" },
+      { name: "Bridal White Bouquet", category: "Wedding", price: "₹3,499", description: "Pristine white silk ribbons formed into an opulent bridal arrangement.", image: "/images/ig/7.png", color: "var(--accent-gold)", igId: "l_u_m_eest._2026" }
     ];
     for (const p of defaultProducts) {
       await db.run('INSERT INTO products (name, category, price, description, image, color, igId) VALUES (?, ?, ?, ?, ?, ?, ?)', 

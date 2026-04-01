@@ -44,11 +44,17 @@
 .bill-status-banner {
   display: flex;
   align-items: center;
-  gap: 15px;
+  justify-content: space-between;
   background: #f0fdf4;
   padding: 15px;
   border-radius: 12px;
   margin-bottom: 25px;
+}
+
+.status-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .success-icon { color: #16a34a; }
@@ -63,6 +69,30 @@
   font-size: 0.8rem;
   color: #15803d;
   margin: 0;
+}
+
+.status-meta {
+  text-align: right;
+}
+
+.status-meta p {
+  font-size: 0.8rem;
+  color: #15803d;
+  margin: 0 0 4px;
+}
+
+.info-block {
+  padding: 15px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.info-block .label {
+  display: block;
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
 
 .bill-table {
@@ -146,6 +176,37 @@
 .btn-download:hover { background: #000; }
 
 @media print {
-  .bill-content { box-shadow: none !important; border: none !important; padding: 0 !important; }
-  .btn-download, .modal-close { display: none !important; }
+  body * {
+    visibility: hidden !important;
+  }
+  .bill-overlay, .bill-overlay * {
+    visibility: visible !important;
+  }
+  .bill-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+    align-items: flex-start;
+  }
+  .bill-content {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .btn-download, .modal-close, .no-print { 
+    display: none !important; 
+  }
+  
+  /* Force background colors on print (requires browser support but helpful to have) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }

@@ -14,11 +14,26 @@ const Gallery = ({ limit }) => {
 
   useEffect(() => {
     const fetchBouquets = async () => {
+      const manualSelection = [
+        { id: '1', name: "Midnight Sparkle Rose", category: "Anniversary", price: "₹1,599", description: "Elegant dark tones intertwined with sparkly ribbons for a magical evening.", image: "/images/ig/1.webp", igId: "l_u_m_eest._2026" },
+        { id: '2', name: "Crimson Delight", category: "Romantic", price: "₹1,199", description: "Vibrant crimson ribbons carefully arranged to express deep affection.", image: "/images/ig/2.webp", igId: "l_u_m_eest._2026" },
+        { id: '3', name: "Classic Anniversary Rose", category: "Anniversary", price: "₹1,299", description: "Deep red and blush pink ribbons woven into 24 premium blooming roses.", image: "/images/ig/3.webp", igId: "l_u_m_eest._2026" },
+        { id: '4', name: "Golden Proposal", category: "Proposal", price: "₹2,499", description: "Luxurious soft gold and cream ribbon roses, arranged in our signature premium box.", image: "/images/ig/4.webp", igId: "l_u_m_eest._2026" },
+        { id: '5', name: "Lavender Dreams", category: "Birthday", price: "₹999", description: "A sweet combination of pastel lavender and white ribbons for a perfect birthday gift.", image: "/images/ig/5.webp", igId: "l_u_m_eest._2026" },
+        { id: '6', name: "Soft Blush Elegance", category: "Custom", price: "From ₹1,499", description: "Customized pastel ribbons blending perfectly for weddings and special moments.", image: "/images/ig/6.webp", igId: "l_u_m_eest._2026" },
+        { id: '7', name: "Bridal White Bouquet", category: "Wedding", price: "₹3,499", description: "Pristine white silk ribbons formed into an opulent bridal arrangement.", image: "/images/ig/7.png", igId: "l_u_m_eest._2026" }
+      ];
+      
       try {
         const data = await getProducts();
-        setBouquets(data);
+        if (data && data.length > 0) {
+          setBouquets(data);
+        } else {
+          setBouquets(manualSelection);
+        }
       } catch (error) {
-        console.error("Failed to fetch products", error);
+        console.error("Failed to fetch products, using manual selection fallback:", error);
+        setBouquets(manualSelection);
       }
     };
     fetchBouquets();
@@ -91,9 +106,9 @@ const Gallery = ({ limit }) => {
     <section className="gallery section reveal-up" id="gallery">
       <div className="container">
         {!limit && (
-          <div className="text-center" style={{ marginBottom: '60px' }}>
-            <h2 className="title-secondary">Bouquet Collection</h2>
-            <p className="subtitle">Discover our handcrafted masterpieces</p>
+          <div className="text-center" style={{ marginBottom: '80px', maxWidth: '600px', margin: '0 auto 80px' }}>
+            <h2 className="title-secondary" style={{ fontSize: '2.5rem', marginBottom: '16px', letterSpacing: '1px' }}>The Signature Collection</h2>
+            <p className="subtitle" style={{ fontSize: '1.05rem', lineHeight: '1.6' }}>Discover our handcrafted botanical masterpieces, featuring exclusive arrangements directly from our latest Instagram journal.</p>
           </div>
         )}
 
@@ -113,7 +128,7 @@ const Gallery = ({ limit }) => {
                 <h3 className="product-title">{item.name}</h3>
                 <p className="product-desc">{item.description}</p>
                 <div className="product-footer">
-                  <span className="product-price">{item.price}</span>
+                  <span className="product-price">{String(item.price).includes('₹') ? item.price : `₹${Number(item.price).toLocaleString('en-IN')}`}</span>
                   <div className="action-buttons">
                     <button 
                       className="btn-icon direct"

@@ -1,16 +1,15 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 import OrderModal from '../components/OrderModal';
-import BillModal from '../components/BillModal';
 import { addOrder } from '../services/api';
 import './CartPage.css';
 
 const CartPage = () => {
   const { cartItems, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
   const [modalState, setModalState] = useState({ isOpen: false, platform: null });
-  const [billOrder, setBillOrder] = useState(null);
+  const navigate = useNavigate();
 
   const handleOpenModal = (platform) => {
     setModalState({ isOpen: true, platform });
@@ -18,11 +17,6 @@ const CartPage = () => {
 
   const handleCloseModal = () => {
     setModalState({ isOpen: false, platform: null });
-  };
-
-  const closeBill = () => {
-    setBillOrder(null);
-    clearCart();
   };
 
   const handleConfirmOrder = async (customerDetails) => {
@@ -36,7 +30,7 @@ const CartPage = () => {
 
     const newOrder = {
       id: Date.now().toString(),
-      date: new Date().toLocaleDateString(),
+      date: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }),
       customer: customerDetails.name,
       phone: customerDetails.phone,
       address: customerDetails.address || "",
@@ -69,7 +63,7 @@ const CartPage = () => {
         clearCart();
       } else if (modalState.platform === 'direct') {
         handleCloseModal();
-        setBillOrder(newOrder);
+        navigate('/success', { state: { order: newOrder } });
       }
     } catch (error) {
       console.error("Failed to place cart order", error);
@@ -147,7 +141,7 @@ const CartPage = () => {
           </div>
           
           <div className="checkout-actions">
-            <button className="btn-primary w-100" onClick={() => handleOpenModal('direct')} style={{ marginBottom: '12px' }}>
+            <button className="btn-primary w-100" onClick={() => navigate('/checkout')} style={{ marginBottom: '12px' }}>
               Checkout Securely
             </button>
             <button className="btn-secondary w-100" onClick={() => handleOpenModal('whatsapp')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -164,12 +158,6 @@ const CartPage = () => {
         product={{ name: "Cart Order", price: `₹${(getCartTotal() + Math.round(getCartTotal() * 0.18) + 100).toLocaleString('en-IN')}` }}
         onConfirm={handleConfirmOrder}
         platform={modalState.platform}
-      />
-      
-      <BillModal 
-        isOpen={!!billOrder} 
-        onClose={closeBill} 
-        order={billOrder} 
       />
     </div>
   );

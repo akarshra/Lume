@@ -39,26 +39,32 @@ const BillModal = ({ isOpen, onClose, order }) => {
         </div>
 
         <div className="bill-status-banner">
-          <CheckCircle2 size={32} className="success-icon" />
-          <div className="status-text">
-            <h2>Payment Confirmed</h2>
-            <p>Invoice No: #LME-{order.id.slice(-6).toUpperCase()}</p>
+          <div className="status-left">
+            <CheckCircle2 size={32} className="success-icon" />
+            <div className="status-text">
+              <h2>Payment Confirmed</h2>
+              <p>Invoice No: #LME-{order.id.slice(-6).toUpperCase()}</p>
+            </div>
+          </div>
+          <div className="status-meta">
+            <p><strong>Date & Time:</strong> {order.date}</p>
+            <p style={{ margin: 0 }}><strong>Method:</strong> {order.paymentMethod === 'stripe' ? 'Online Payment' : 'Cash on Delivery'}</p>
           </div>
         </div>
 
         <div className="bill-body">
-          <div className="bill-info-grid">
+          <div className="bill-info-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '25px' }}>
             <div className="info-block">
-              <span className="label">Customer Details</span>
+              <span className="label">Billed To (Customer)</span>
               <p className="value"><strong>{order.customer}</strong></p>
               <p className="value">{order.phone}</p>
               <p className="value address-small">{order.address}</p>
             </div>
             <div className="info-block text-right">
-              <span className="label">Transaction Date</span>
-              <p className="value">{order.date}</p>
-              <span className="label" style={{marginTop: '10px', display: 'block'}}>Method</span>
-              <p className="value">{order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Prepaid'}</p>
+              <span className="label" style={{ textAlign: 'right' }}>Shipped From (Sender)</span>
+              <p className="value"><strong>Lumé Studio</strong></p>
+              <p className="value">Kishanganj, Bihar</p>
+              <p className="value">India, 855107</p>
             </div>
           </div>
 
