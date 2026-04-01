@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getOrders } from '../services/api';
-import './Admin.css'; // Reusing admin styles for simplicity
+import { getUserOrders } from '../services/api';
+import { Package, Clock, Truck, CheckCircle, SearchX } from 'lucide-react';
+import './Admin.css';
 
 const AccountPage = () => {
   const { user, signIn, signUp, signOut } = useAuth();
@@ -15,8 +16,8 @@ const AccountPage = () => {
     if (user) {
       const fetchMyOrders = async () => {
         try {
-          const orders = await getOrders();
-          setMyOrders(orders.filter(o => o.user_id === user.id));
+          const orders = await getUserOrders(user.id);
+          setMyOrders(orders);
         } catch (err) {
           console.error("Error fetching user orders:", err);
         }
@@ -71,35 +72,41 @@ const AccountPage = () => {
         <button onClick={signOut} className="btn-outline-danger">Sign Out</button>
       </div>
 
-      <div className="content-card glass-panel" style={{ padding: '2rem' }}>
-        <h3>Order History</h3>
+      <div className="content-card glass-panel" style={{ padding: '3rem', minHeight: '400px' }}>
+        <h3 style={{ fontSize: '1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '10px' }}><Package color="var(--primary-dark)" /> My Order History</h3>
+        
         {myOrders.length === 0 ? (
-          <p>You haven't placed any orders yet.</p>
+          <div style={{ textAlign: 'center', padding: '4rem 0', color: '#666' }}>
+            <SearchX size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+            <p style={{ fontSize: '1.1rem' }}>You haven't placed any orders yet.</p>
+          </div>
         ) : (
-          <table className="admin-table" style={{ width: '100%', marginTop: '1rem' }}>
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Item</th>
-                <th>Status</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {myOrders.map(order => (
-                <tr key={order.id}>
-                  <td>{order.id.slice(0, 8)}...</td>
-                  <td>{order.item}</td>
-                  <td>
-                    <span className={`status-pill ${order.status.toLowerCase().replace(' ', '-')}`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td>₹{order.amount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="order-history-grid" style={{ display: 'grid', gap: '1.5rem' }}>
+            {myOrders.map(order => (
+              <div key={order.id} style={{ border: '1px solid #eee', borderRadius: '12px', padding: '1.5rem', background: '#fff', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#333' }}>Order #{order.id.slice(0, 8)}</span>
+                    <span style={{ fontSize: '0.85rem', color: '#888' }}>• {order.date}</span>
+                  </div>
+                  <p style={{ margin: 0, color: '#555' }}>{order.item}</p>
+                  <p style={{ margin: '4px 0 0 0', fontWeight: 'bold', color: 'var(--primary-dark)' }}>
+                    {String(order.amount).includes('₹') ? order.amount : `₹${Number(order.amount).toLocaleString('en-IN')}`}
+                  </p>
+                </div>
+                
+                <div style={{ textAlign: 'right' }}>
+                  <div className={`status-pill ${order.status?.toLowerCase().replace(' ', '-') || 'pending'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', fontSize: '0.9rem' }}>
+                    {order.status === 'Pending' && <Clock size={16} />}
+                    {order.status === 'Crafting' && <Package size={16} />}
+                    {order.status === 'In Transit' && <Truck size={16} />}
+                    {order.status === 'Delivered' && <CheckCircle size={16} />}
+                    {order.status || 'Pending'}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

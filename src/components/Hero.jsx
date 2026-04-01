@@ -1,9 +1,18 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Bouquet3D from './Bouquet3D';
 import './Hero.css';
 
 const Hero = () => {
   const visualRef = useRef(null);
+
+  const [particles] = useState(() => {
+    return [...Array(15)].map(() => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      animationDelay: `${Math.random() * 5}s`,
+      animationDuration: `${6 + Math.random() * 4}s`
+    }));
+  });
 
   useEffect(() => {
     // Scroll Parallax
@@ -38,16 +47,11 @@ const Hero = () => {
     <section className="hero" id="home">
       {/* Floating Particles Background */}
       <div className="particles-container">
-        {[...Array(15)].map((_, i) => (
+        {particles.map((style, i) => (
           <div 
             key={i} 
             className="particle" 
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${6 + Math.random() * 4}s`
-            }}
+            style={style}
           />
         ))}
       </div>

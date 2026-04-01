@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { CheckCircle2, Download, ShieldCheck, ArrowLeft } from 'lucide-react';
 import '../components/BillModal.css';

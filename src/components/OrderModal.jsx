@@ -46,7 +46,7 @@ const OrderModal = ({ isOpen, onClose, product, onConfirm, platform, isCustomReq
         } else {
            setClientSecret(data.clientSecret);
         }
-      } catch (err) {
+      } catch {
         setApiError("Could not reach secure payment server. Please try again.");
       } finally {
         setIsLoadingSecret(false);

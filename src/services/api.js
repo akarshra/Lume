@@ -1,6 +1,5 @@
 import { supabase } from '../lib/supabase';
 
-// --- Orders API ---
 export const getOrders = async () => {
   const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
   if (error) {
@@ -10,8 +9,28 @@ export const getOrders = async () => {
   return data;
 };
 
+export const getUserOrders = async (userId) => {
+  if (!userId) return [];
+  const { data, error } = await supabase.from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+  if (error) {
+    console.error('API Error:', error);
+    return [];
+  }
+  return data;
+};
+
+export const getOrderByTrackId = async (trackId) => {
+  if (!trackId) return null;
+  const { data, error } = await supabase.from('orders').select('*').eq('id', trackId).single();
+  if (error) {
+    console.error('API Error:', error);
+    return null; // Might not exist
+  }
+  return data;
+};
+
 export const addOrder = async (orderData) => {
-  const { type, platform, ...cleanOrderData } = orderData;
+  const { type: _type, platform: _platform, ...cleanOrderData } = orderData;
   const { data, error } = await supabase.from('orders').insert([cleanOrderData]).select();
   if (error) {
     console.error('API Error:', error);
@@ -139,4 +158,49 @@ export const deleteProduct = async (id) => {
     throw error;
   }
   return { message: 'Product deleted' };
+};
+
+// --- Wishlist API ---
+export const getWishlist = async (userId) => {
+  if (!userId) return [];
+  const { data, error } = await supabase.from('wishlist').select('product_id').eq('user_id', userId);
+  if (error) {
+    console.warn('Wishlist table may not exist yet or API error:', error);
+    return [];
+  }
+  return data.map(d => d.product_id);
+};
+
+export const toggleWishlist = async (productId, userId) => {
+  if (!userId) throw new Error("Must be logged in to wishlist items");
+  // Check if exists
+  const { data: existing } = await supabase.from('wishlist').select('id').eq('product_id', productId).eq('user_id', userId).single();
+  if (existing) {
+    const { error: delError } = await supabase.from('wishlist').delete().eq('id', existing.id);
+    if (delError) throw delError;
+    return false; // Removed
+  } else {
+    const { error: insError } = await supabase.from('wishlist').insert([{ product_id: productId, user_id: userId }]);
+    if (insError) throw insError;
+    return true; // Added
+  }
+};
+
+// --- Reviews API ---
+export const getReviews = async (productId) => {
+  const { data, error } = await supabase.from('reviews').select('*').eq('product_id', productId).order('created_at', { ascending: false });
+  if (error) {
+    console.warn('Reviews table may not exist yet or API error.', error);
+    return [];
+  }
+  return data;
+};
+
+export const addReview = async (reviewInput) => {
+  const { data, error } = await supabase.from('reviews').insert([reviewInput]).select();
+  if (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+  return data[0];
 };

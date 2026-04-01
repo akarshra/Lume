@@ -7,7 +7,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsToolti
 import { 
   getOrders, updateOrderStatus, deleteOrder as deleteOrderApi, clearAllOrders as clearAllOrdersApi,
   getInventory, addInventory as addInventoryApi, updateInventoryStatus, deleteInventoryItem,
-  getPromos, addPromo as addPromoApi, deletePromoApi,
+  getPromos, deletePromoApi,
   getProducts, addProduct, deleteProduct
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -200,11 +200,30 @@ const Admin = () => {
     }
   };
 
-  // derived chart data
-  const revenueData = orders.map(o => ({
-    name: o.id.slice(0, 4),
-    revenue: Number(o.amount) || Math.floor(Math.random() * 5000), // using random as fallback if amounts aren't fully numeric yet
-  })).slice(0, 7).reverse();
+  const processRevenueData = (allOrders) => {
+    const grouped = {};
+    allOrders.forEach(o => {
+      // Depending on locale string, it might be separated by a comma. If it is already a timestamp, parse it
+      const dateKey = o.date ? String(o.date).split(',')[0].trim() : 'Unknown';
+      if (!grouped[dateKey]) grouped[dateKey] = 0;
+      
+      let amount = 0;
+      if (typeof o.amount === 'string') {
+        const parsed = Number(o.amount.replace(/[^0-9.-]+/g, ''));
+        amount = isNaN(parsed) ? 0 : parsed;
+      } else {
+        amount = Number(o.amount) || 0;
+      }
+      grouped[dateKey] += amount;
+    });
+
+    return Object.entries(grouped).map(([date, revenue]) => ({
+      name: date,
+      revenue
+    })).slice(-7).reverse(); // Last 7 days
+  };
+
+  const revenueData = processRevenueData(orders);
 
   const statusData = [
     { name: 'Pending', count: orders.filter(o => o.status === 'Pending').length },
@@ -212,6 +231,8 @@ const Admin = () => {
     { name: 'In Transit', count: orders.filter(o => o.status === 'In Transit').length },
     { name: 'Delivered', count: orders.filter(o => o.status === 'Delivered').length },
   ];
+
+  const lowStockItems = inventory.filter(i => !i.inStock || Number(i.stock) < 5);
 
   if (!user) {
     return (
@@ -236,7 +257,10 @@ const Admin = () => {
         <nav className="sidebar-nav">
           <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => setActiveTab('overview')}><LayoutDashboard size={20}/> Overview</button>
           <button className={activeTab === 'orders' ? 'active' : ''} onClick={() => setActiveTab('orders')}><ShoppingBag size={20}/> Orders</button>
-          <button className={activeTab === 'inventory' ? 'active' : ''} onClick={() => setActiveTab('inventory')}><Database size={20}/> Inventory</button>
+          <button className={activeTab === 'inventory' ? 'active' : ''} onClick={() => setActiveTab('inventory')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Database size={20}/> Inventory</div>
+            {lowStockItems.length > 0 && <span style={{ background: '#ef4444', color: 'white', fontSize: '0.7rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '10px' }}>{lowStockItems.length}</span>}
+          </button>
           <button className={activeTab === 'bouquets' ? 'active' : ''} onClick={() => setActiveTab('bouquets')}><Gift size={20}/> Bouquets</button>
           <button className={activeTab === 'promos' ? 'active' : ''} onClick={() => setActiveTab('promos')}><Tag size={20}/> Marketing</button>
         </nav>
@@ -251,6 +275,15 @@ const Admin = () => {
         <div className="admin-scroll-content">
           {activeTab === 'overview' && (
             <div className="admin-section fade-in">
+              {lowStockItems.length > 0 && (
+                <div className="alert-banner" style={{ background: '#fef2f2', border: '1px solid #fee2e2', color: '#991b1b', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <AlertTriangle size={24} color="#ef4444" />
+                  <div>
+                    <strong>Inventory Alert:</strong> {lowStockItems.length} {lowStockItems.length === 1 ? 'item requires' : 'items require'} your attention.
+                    <button onClick={() => setActiveTab('inventory')} style={{ background: 'none', border: 'none', color: '#ef4444', textDecoration: 'underline', cursor: 'pointer', marginLeft: '8px', fontWeight: 'bold' }}>View Inventory</button>
+                  </div>
+                </div>
+              )}
               <div className="stats-grid">
                 <div className="stat-card">
                   <div className="stat-header"><div className="stat-icon rev"><TrendingUp color="#10b981"/></div></div>
@@ -340,8 +373,11 @@ const Admin = () => {
                   <thead><tr><th>Material</th><th>Stock</th><th>Availability</th><th>Actions</th></tr></thead>
                   <tbody>
                     {inventory.map(item => (
-                      <tr key={item.id}>
-                        <td><strong>{item.name}</strong></td>
+                      <tr key={item.id} style={{ background: (!item.inStock || Number(item.stock) < 5) ? '#fff5f5' : 'transparent' }}>
+                        <td>
+                          <strong>{item.name}</strong>
+                          {(!item.inStock || Number(item.stock) < 5) && <AlertTriangle size={14} color="#ef4444" style={{ marginLeft: '8px', verticalAlign: 'middle' }} title="Low stock or Out of stock" />}
+                        </td>
                         <td>{item.stock} {item.unit}</td>
                         <td>
                           <button onClick={() => toggleStock(item.id)} className={`stock-toggle ${item.inStock ? 'is-in' : 'is-out'}`}>

@@ -6,13 +6,13 @@ import { CreditCard, Banknote, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import StripeCheckoutForm from '../components/StripeCheckoutForm';
-import { addOrder } from '../services/api';
+import { addOrder, getPromos } from '../services/api';
 import './CheckoutPage.css';
 
 const stripePromise = loadStripe('pk_test_51T4bcOLkWChg5JeJdTPGkNttxonAEO6SuRYpKMuxggvRKXRXRCbaxwgp9wBwwy7anqdJrck1wPNXmXE9vekGtZk700Ob1bx4pL');
 
 const CheckoutPage = () => {
-  const { cartItems, getCartTotal, clearCart } = useCart();
+  const { cartItems, getCartTotal } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   
@@ -26,6 +26,10 @@ const CheckoutPage = () => {
   const [clientSecret, setClientSecret] = useState(null);
   const [isLoadingSecret, setIsLoadingSecret] = useState(false);
   const [apiError, setApiError] = useState(null);
+  
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState(null);
+  const [promoError, setPromoError] = useState('');
 
   if (cartItems.length === 0) {
     return (
@@ -37,10 +41,44 @@ const CheckoutPage = () => {
   }
 
   const subtotal = getCartTotal();
-  const gstAmount = Math.round(subtotal * 0.18);
+  
+  let discountAmount = 0;
+  if (appliedPromo) {
+    if (appliedPromo.discount.includes('%')) {
+      const percentage = parseInt(appliedPromo.discount.replace('%', ''), 10);
+      discountAmount = Math.round((subtotal * percentage) / 100);
+    } else if (appliedPromo.discount.includes('₹')) {
+      discountAmount = parseInt(appliedPromo.discount.replace('₹', ''), 10);
+    }
+  }
+  const discountedSubtotal = Math.max(0, subtotal - discountAmount);
+
+  const gstAmount = Math.round(discountedSubtotal * 0.18);
   const codCharge = formData.paymentMethod === 'cod' ? 100 : 0;
-  const grandTotal = subtotal + gstAmount + codCharge;
+  const grandTotal = discountedSubtotal + gstAmount + codCharge;
   const totalAmountStr = `₹${grandTotal.toLocaleString('en-IN')}`;
+
+  const handleApplyPromo = async () => {
+    setPromoError('');
+    if (!promoCodeInput.trim()) return;
+    try {
+      const promos = await getPromos();
+      const codeData = promos.find(p => p.code.toLowerCase() === promoCodeInput.trim().toLowerCase());
+      if (codeData) {
+        setAppliedPromo(codeData);
+      } else {
+        setPromoError('Invalid promo code');
+      }
+    } catch {
+      setPromoError('Error verifying code');
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoCodeInput('');
+    setPromoError('');
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -87,13 +125,17 @@ const CheckoutPage = () => {
           body: JSON.stringify({ items: [{ name: "Cart Order", price: totalAmountStr }], isCustom: false }),
         });
         const data = await response.json();
-        if (data.error) {
-           setApiError(data.error);
-        } else {
+        
+        if (data?.error) {
+           setApiError(data.error.message || data.error);
+        } else if (data?.clientSecret) {
            setClientSecret(data.clientSecret);
+        } else {
+           throw new Error("Invalid response from payment server");
         }
       } catch (err) {
-        setApiError("Could not reach secure payment server. Please try again.");
+        console.error("Payment Error:", err);
+        setApiError("Could not reach secure payment server. Please ensure the local backend server is running.");
       } finally {
         setIsLoadingSecret(false);
       }
@@ -252,10 +294,36 @@ const CheckoutPage = () => {
             
             <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '20px 0' }}/>
             
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input 
+                  type="text" 
+                  placeholder="Promo code" 
+                  value={promoCodeInput}
+                  onChange={(e) => setPromoCodeInput(e.target.value)}
+                  disabled={!!appliedPromo}
+                  style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '6px' }}
+                />
+                {!appliedPromo ? (
+                    <button type="button" onClick={handleApplyPromo} className="btn-secondary" style={{ padding: '10px 16px' }}>Apply</button>
+                ) : (
+                    <button type="button" onClick={handleRemovePromo} className="btn-outline-danger" style={{ padding: '10px 16px' }}>Remove</button>
+                )}
+              </div>
+              {promoError && <p style={{ color: '#d9534f', fontSize: '0.8rem', marginTop: '6px' }}>{promoError}</p>}
+              {appliedPromo && <p style={{ color: '#10b981', fontSize: '0.8rem', marginTop: '6px' }}>Promo code applied successfully!</p>}
+            </div>
+
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.9rem', color: '#555' }}>
               <span>Subtotal</span>
               <span>₹{subtotal.toLocaleString('en-IN')}</span>
             </div>
+            {appliedPromo && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.9rem', color: '#10b981' }}>
+                <span>Discount ({appliedPromo.code})</span>
+                <span>-₹{discountAmount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.9rem', color: '#555' }}>
               <span>GST (18%)</span>
               <span>₹{gstAmount.toLocaleString('en-IN')}</span>

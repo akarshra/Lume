@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Sparkles, Send, Ruler, Palette, Heart } from 'lucide-react';
 import './CustomOrder.css';
 

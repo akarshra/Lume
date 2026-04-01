@@ -1,16 +1,35 @@
 import { useState, useEffect } from 'react';
-import { MessageCircle, Instagram, ShoppingBag, ShoppingCart } from 'lucide-react';
+import { MessageCircle, Instagram, ShoppingBag, ShoppingCart, Heart } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import OrderModal from './OrderModal';
 import BillModal from './BillModal';
-import { addOrder, getProducts } from '../services/api';
+import { addOrder, getProducts, getWishlist, toggleWishlist } from '../services/api';
 import './Gallery.css';
 
 const Gallery = ({ limit }) => {
   const [modalState, setModalState] = useState({ isOpen: false, product: null, platform: null });
   const [billOrder, setBillOrder] = useState(null);
   const [bouquets, setBouquets] = useState([]);
+  const [filterCategory, setFilterCategory] = useState('All');
+  const [sortBy, setSortBy] = useState('default');
+  const [wishlist, setWishlist] = useState([]);
   const { addToCart } = useCart();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    let active = true;
+    if (user) {
+      getWishlist(user.id).then((data) => {
+        if (active) setWishlist(data);
+      });
+    } else {
+      Promise.resolve().then(() => {
+        if (active) setWishlist([]);
+      });
+    }
+    return () => { active = false; };
+  }, [user]);
 
   useEffect(() => {
     const fetchBouquets = async () => {
@@ -100,16 +119,74 @@ const Gallery = ({ limit }) => {
     }
   };
 
-  const displayBouquets = limit ? bouquets.slice(0, limit) : bouquets;
+  const handleWishlistToggle = async (productId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) return alert("Please sign in to save items to your wishlist.");
+    try {
+      const isAdded = await toggleWishlist(productId, user.id);
+      if (isAdded) {
+        setWishlist([...wishlist, productId]);
+      } else {
+        setWishlist(wishlist.filter(id => id !== productId));
+      }
+    } catch (error) {
+      console.error("Wishlist error", error);
+    }
+  };
+
+  const categories = ['All', ...new Set(bouquets.map(b => b.category))];
+
+  let displayBouquets = [...bouquets];
+  if (!limit) {
+    if (filterCategory !== 'All') {
+      displayBouquets = displayBouquets.filter(b => b.category === filterCategory);
+    }
+    if (sortBy === 'price-asc') {
+      displayBouquets.sort((a, b) => parseInt(String(a.price).replace(/[^0-9]/g, ''), 10) - parseInt(String(b.price).replace(/[^0-9]/g, ''), 10));
+    } else if (sortBy === 'price-desc') {
+      displayBouquets.sort((a, b) => parseInt(String(b.price).replace(/[^0-9]/g, ''), 10) - parseInt(String(a.price).replace(/[^0-9]/g, ''), 10));
+    }
+  }
+  displayBouquets = limit ? displayBouquets.slice(0, limit) : displayBouquets;
 
   return (
     <section className="gallery section reveal-up" id="gallery">
       <div className="container">
         {!limit && (
-          <div className="text-center" style={{ marginBottom: '80px', maxWidth: '600px', margin: '0 auto 80px' }}>
-            <h2 className="title-secondary" style={{ fontSize: '2.5rem', marginBottom: '16px', letterSpacing: '1px' }}>The Signature Collection</h2>
-            <p className="subtitle" style={{ fontSize: '1.05rem', lineHeight: '1.6' }}>Discover our handcrafted botanical masterpieces, featuring exclusive arrangements directly from our latest Instagram journal.</p>
-          </div>
+          <>
+            <div className="text-center" style={{ marginBottom: '60px', maxWidth: '600px', margin: '0 auto 40px' }}>
+              <h2 className="title-secondary" style={{ fontSize: '2.5rem', marginBottom: '16px', letterSpacing: '1px' }}>The Signature Collection</h2>
+              <p className="subtitle" style={{ fontSize: '1.05rem', lineHeight: '1.6' }}>Discover our handcrafted botanical masterpieces, featuring exclusive arrangements directly from our latest Instagram journal.</p>
+            </div>
+            
+            <div className="gallery-filters" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' }}>
+              <div className="filter-categories" style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px', scrollbarWidth: 'none' }}>
+                {categories.map(cat => (
+                  <button 
+                    key={cat} 
+                    onClick={() => setFilterCategory(cat)}
+                    className="btn-filter"
+                    style={{ padding: '8px 20px', borderRadius: '30px', whiteSpace: 'nowrap', border: filterCategory === cat ? '2px solid var(--primary-dark)' : '1px solid #ddd', background: filterCategory === cat ? 'var(--primary-dark)' : 'transparent', color: filterCategory === cat ? '#fff' : '#444', fontWeight: filterCategory === cat ? '600' : '400', transition: '0.2s', cursor: 'pointer' }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              
+              <div className="filter-sort">
+                <select 
+                  value={sortBy} 
+                  onChange={(e) => setSortBy(e.target.value)}
+                  style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #ddd', outline: 'none', background: '#fff', cursor: 'pointer', color: '#444' }}
+                >
+                  <option value="default">Sort Options</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                </select>
+              </div>
+            </div>
+          </>
         )}
 
         <div className="gallery-grid">
@@ -119,7 +196,14 @@ const Gallery = ({ limit }) => {
               key={item.id}
               style={{ animationDelay: `${(idx % 4) * 0.15 + 0.2}s`}}
             >
-              <div className="product-image-wrapper">
+              <div className="product-image-wrapper" style={{ position: 'relative' }}>
+                <button 
+                  onClick={(e) => handleWishlistToggle(item.id, e)}
+                  style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(4px)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '0.2s', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
+                  title="Add to Wishlist"
+                >
+                  <Heart size={20} fill={wishlist.includes(item.id) ? '#ef4444' : 'transparent'} color={wishlist.includes(item.id) ? '#ef4444' : '#666'} />
+                </button>
                 <img src={item.image} alt={item.name} className="product-image" loading="lazy" />
               </div>
               

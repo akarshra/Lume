@@ -12,6 +12,7 @@ import SuccessPage from './pages/SuccessPage';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
 import AccountPage from './pages/AccountPage';
+import OrderTrackingPage from './pages/OrderTrackingPage';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import './App.css';
@@ -36,6 +37,7 @@ function MainLayout() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/success" element={<SuccessPage />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/track" element={<OrderTrackingPage />} />
         </Routes>
       </main>
       {!isAdmin && <Footer />}

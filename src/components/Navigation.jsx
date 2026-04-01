@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, ShoppingCart, User } from 'lucide-react';
+import { Menu, X, ShoppingCart, User, PackageSearch } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import './Navigation.css';
@@ -39,6 +39,10 @@ const Navigation = () => {
         </div>
 
         <div className="nav-actions">
+          <button className="nav-cart-btn" onClick={() => { setIsOpen(false); navigate('/track'); }} title="Track My Order">
+            <PackageSearch size={22} />
+          </button>
+          
           <button className="nav-cart-btn" onClick={() => { setIsOpen(false); navigate('/account'); }} title="My Account">
             <User size={22} />
           </button>

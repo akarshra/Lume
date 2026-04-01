@@ -2,22 +2,21 @@ import { createContext, useState, useEffect, useContext } from 'react';
 
 const CartContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
-
-  useEffect(() => {
-    // Load cart from local storage on mount
+  const [cartItems, setCartItems] = useState(() => {
     const savedCart = localStorage.getItem('lume_cart');
     if (savedCart) {
       try {
-        setCartItems(JSON.parse(savedCart));
+        return JSON.parse(savedCart);
       } catch (e) {
         console.error("Could not parse cart data", e);
       }
     }
-  }, []);
+    return [];
+  });
 
   useEffect(() => {
     // Save cart to local storage whenever it changes
