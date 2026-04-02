@@ -63,6 +63,7 @@ const SuccessPage = () => {
               <div className="status-text">
                 <h2>Payment Confirmed</h2>
                 <p>Invoice No: #LME-{order.id.slice(-6).toUpperCase()}</p>
+              <p style={{marginTop:"6px",fontWeight:"700",fontSize:"0.95rem",color:"#166534",letterSpacing:"1px",background:"#dcfce7",padding:"4px 10px",borderRadius:"6px",display:"inline-block"}}>🔍 Tracking ID: {order.id}</p>
               </div>
             </div>
             <div className="status-meta">

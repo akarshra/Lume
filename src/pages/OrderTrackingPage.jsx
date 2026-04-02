@@ -132,6 +132,28 @@ const OrderTrackingPage = () => {
           </div>
         )}
 
+        {order && (
+          <div className="glass-panel reveal-up" style={{ padding: "30px", background: "white" }}>
+            <h3 style={{ fontSize: "1.1rem", marginBottom: "16px", color: "#0f172a" }}>
+              📍 Shipment Location
+            </h3>
+            <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid #e2e8f0" }}>
+              <iframe
+                title="Order Location"
+                width="100%"
+                height="280"
+                frameBorder="0"
+                scrolling="no"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=87.9%2C26.0%2C88.1%2C26.2&layer=mapnik&marker=26.1%2C88.0"
+                style={{ display: "block" }}
+              />
+            </div>
+            <p style={{ marginTop: "12px", fontSize: "0.82rem", color: "#64748b", textAlign: "center" }}>
+              Dispatched from: <strong>Lume Studio, Kishanganj, Bihar 855107</strong>
+            </p>
+          </div>
+        )}
+
       </div>
     </div>
   );
