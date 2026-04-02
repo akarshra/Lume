@@ -15,7 +15,7 @@ import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import './Admin.css';
 
-const ADMIN_EMAIL = 'akarshsrivastav322@gmail.com';
+const ADMIN_EMAIL = 'akarshsrivastava322@gmail.com';
 
 const Admin = () => {
   const { user } = useAuth();
