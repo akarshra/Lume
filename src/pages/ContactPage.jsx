@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { supabase } from '../lib/supabase';
 import { Instagram, MapPin, MessageCircle, Sparkles, Mail, Send } from 'lucide-react';
 import './ContactPage.css';
 
 const ContactPage = () => {
+  const [submitStatus, setSubmitStatus] = useState('idle');
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Thank you ${formData.name}, your message has been sent to Lumé!`);
-    setFormData({ name: '', email: '', message: '' });
+    setSubmitStatus('loading');
+    try {
+      await supabase.from('contacts').insert([{ name: formData.name, email: formData.email, message: formData.message }]);
+      setSubmitStatus('done');
+      setFormData({ name: '', email: '', message: '' });
+    } catch {
+      setSubmitStatus('error');
+    }
   };
 
   return (
@@ -111,8 +119,8 @@ const ContactPage = () => {
                   value={formData.message}
                   onChange={(e) => setFormData({...formData, message: e.target.value})}
                 ></textarea>
-                <button type="submit" className="btn-send-message">
-                  <span>Send Message</span>
+                <button type="submit" className="btn-send-message" disabled={submitStatus==='loading' || submitStatus==='done'}>
+                  <span>{submitStatus==='done' ? 'Sent! Thank you ✓' : submitStatus==='loading' ? 'Sending...' : 'Send Message'}</span>
                   <Send size={16} />
                 </button>
               </form>

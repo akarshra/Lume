@@ -6,12 +6,15 @@ import '../components/BillModal.css';
 
 const SuccessPage = () => {
   const location = useLocation();
-  const [order] = useState(location.state?.order);
+  const [order] = useState(() => {
+    if (location.state?.order) {
+      localStorage.setItem('lume_last_order', JSON.stringify(location.state.order));
+      return location.state.order;
+    }
+    try { return JSON.parse(localStorage.getItem('lume_last_order')); } catch { return null; }
+  });
   const { clearCart } = useCart();
-
-  useEffect(() => {
-    clearCart();
-  }, [clearCart]);
+  useEffect(() => { clearCart(); }, [clearCart]);
 
   if (!order) {
     return (
@@ -23,10 +26,11 @@ const SuccessPage = () => {
   }
 
   const grandTotal = parseInt(String(order.amount).replace(/[^0-9]/g, '')) || 0;
-  const delivery = 100;
+  const isCustomDeposit = grandTotal === 1000 && order.paymentMethod === 'stripe';
+  const delivery = isCustomDeposit ? 0 : 100;
   const gstRate = 0.18;
-  const subtotal = Math.round((grandTotal - delivery) / (1 + gstRate));
-  const gstAmount = grandTotal - delivery - subtotal;
+  const subtotal = grandTotal > (delivery + 10) ? Math.round((grandTotal - delivery) / (1 + gstRate)) : grandTotal;
+  const gstAmount = grandTotal > (delivery + 10) ? grandTotal - delivery - subtotal : 0;
 
   const handlePrint = () => {
     window.print();

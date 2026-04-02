@@ -13,6 +13,7 @@ const Gallery = ({ limit }) => {
   const [bouquets, setBouquets] = useState([]);
   const [filterCategory, setFilterCategory] = useState('All');
   const [sortBy, setSortBy] = useState('default');
+  const [searchQuery, setSearchQuery] = useState('');
   const [wishlist, setWishlist] = useState([]);
   const { addToCart } = useCart();
   const { user } = useAuth();
@@ -139,6 +140,10 @@ const Gallery = ({ limit }) => {
 
   let displayBouquets = [...bouquets];
   if (!limit) {
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      displayBouquets = displayBouquets.filter(b => b.name.toLowerCase().includes(q) || (b.category && b.category.toLowerCase().includes(q)) || (b.description && b.description.toLowerCase().includes(q)));
+    }
     if (filterCategory !== 'All') {
       displayBouquets = displayBouquets.filter(b => b.category === filterCategory);
     }
@@ -160,6 +165,17 @@ const Gallery = ({ limit }) => {
               <p className="subtitle" style={{ fontSize: '1.05rem', lineHeight: '1.6' }}>Discover our handcrafted botanical masterpieces, featuring exclusive arrangements directly from our latest Instagram journal.</p>
             </div>
             
+            <div style={{ marginBottom: '20px', position: 'relative', maxWidth: '420px' }}>
+              <input
+                type='text'
+                placeholder='Search bouquets by name or occasion...'
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{ width: '100%', padding: '12px 20px 12px 44px', border: '1.5px solid #e2e8f0', borderRadius: '30px', fontSize: '0.95rem', outline: 'none', background: '#fff', boxSizing: 'border-box' }}
+              />
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }}>🔍</span>
+              {searchQuery && <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '1.1rem' }}>✕</button>}
+            </div>
             <div className="gallery-filters" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' }}>
               <div className="filter-categories" style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px', scrollbarWidth: 'none' }}>
                 {categories.map(cat => (
