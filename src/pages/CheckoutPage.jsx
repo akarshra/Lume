@@ -275,7 +275,7 @@ const CheckoutPage = () => {
             )}
           </div>
           
-          <div className="cart-summary glass-panel" style={{ position: 'sticky', top: '100px' }}>
+          <div className="cart-summary glass-panel" style={{ position: 'static' }}>
             <h3 style={{ marginBottom: '24px', fontFamily: 'var(--font-heading)' }}>Order Summary</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px', maxHeight: '300px', overflowY: 'auto', paddingRight: '8px' }}>
               {cartItems.map(item => (
