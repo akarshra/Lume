@@ -10,7 +10,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__dirname, '.env.local') });
 
 const app = express();
-const port = 5001;
+const port = 5002;
 
 app.use(cors());
 app.use(express.json());
@@ -20,16 +20,20 @@ const stripeKey = process.env.STRIPE_SECRET_KEY;
 if (!stripeKey) {
   console.warn("WARNING: STRIPE_SECRET_KEY is missing from .env.local!");
 }
-const stripe = new Stripe(stripeKey || 'sk_test_fallback');
+const stripe = stripeKey ? new Stripe(stripeKey) : null;
 
 app.post('/api/create-payment-intent', async (req, res) => {
   try {
+    if (!stripe) {
+      return res.status(503).json({ error: { message: 'Stripe secret key is not configured on the payment server.' } });
+    }
+
     const { items, isCustom } = req.body;
-    
+
     // Parse the totalAmountStr which comes in like "₹1,987"
     let totalAmountStr = (items && items[0]) ? items[0].price : "0";
     let rawAmount = 0;
-    
+
     if (typeof totalAmountStr === 'string') {
       const parsed = Number(totalAmountStr.replace(/[^0-9.-]+/g, ''));
       rawAmount = parseInt((parsed * 100).toString()); // Cents/paise format
