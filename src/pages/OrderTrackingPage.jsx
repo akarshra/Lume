@@ -23,7 +23,7 @@ const OrderTrackingPage = () => {
       } else {
         setError('No order found with that ID. Please check your bill number and try again.');
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred while tracking your order. Please try again later.');
     } finally {
       setLoading(false);
@@ -88,7 +88,7 @@ const OrderTrackingPage = () => {
                 placeholder="e.g. 1711204812345" 
                 value={trackId}
                 onChange={(e) => setTrackId(e.target.value)}
-                style={{ width: '100%', padding: '16px. 16px 16px 48px', border: '2px solid #e2e8f0', borderRadius: '12px', fontSize: '1rem', outline: 'none', transition: '0.2s' }}
+                style={{ width: '100%', padding: '16px 16px 16px 48px', border: '2px solid #e2e8f0', borderRadius: '12px', fontSize: '1rem', outline: 'none', transition: '0.2s' }}
               />
             </div>
             <button type="submit" className="btn-primary" disabled={loading} style={{ padding: '0 30px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
