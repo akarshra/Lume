@@ -12,20 +12,10 @@ import {
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { useNavigate } from 'react-router-dom';
 import './Admin.css';
 
-const ADMIN_EMAIL = 'akarshraj2710@gmail.com';
-
 const Admin = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user !== undefined && (!user || user.email !== ADMIN_EMAIL)) {
-      navigate('/', { replace: true });
-    }
-  }, [user, navigate]);
+  const { user, loading } = useAuth();
 
   const [activeTab, setActiveTab] = useState('overview');
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
@@ -262,6 +252,10 @@ const Admin = () => {
 
   const lowStockItems = inventory.filter(i => !i.inStock || Number(i.stock) < 5);
 
+  if (loading) {
+    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#64748b' }}>Loading...</p></div>;
+  }
+
   if (!user) {
     return (
       <div className="admin-login-screen">
@@ -271,17 +265,6 @@ const Admin = () => {
           <p style={{marginBottom: '2rem'}}>Please log in from the Account page to access the admin dashboard.</p>
           <a href="/account" className="btn-primary" style={{display: 'inline-block', textDecoration: 'none'}}>Go to Login</a>
         </div>
-      </div>
-    );
-  }
-
-  if (user.email !== ADMIN_EMAIL) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
-        <Lock size={48} color="#9b1b30" />
-        <h2 style={{ color: '#9b1b30' }}>Access Restricted</h2>
-        <p style={{ color: '#64748b' }}>You do not have permission to view this page.</p>
-        <a href="/" className="btn-secondary">Go Home</a>
       </div>
     );
   }

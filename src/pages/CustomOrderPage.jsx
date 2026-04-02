@@ -81,34 +81,6 @@ const CustomOrderPage = () => {
     }
   };
 
-  const handleWhatsAppSubmit = async (e) => {
-    e.preventDefault();
-    
-    const newOrder = {
-      id: Date.now().toString(),
-      date: new Date().toLocaleDateString(),
-      customer: formData.name,
-      phone: formData.phone,
-      item: `Custom: ${formData.size}`,
-      amount: 0,
-      status: "Pending",
-      type: "Custom Request",
-      user_id: user ? user.id : null
-    };
-    
-    try {
-      await addOrder(newOrder);
-      
-      const phone = "919000000000"; 
-      const text = `Hello Lumé! I would like a custom bouquet.\n\nName: ${formData.name}\nOccasion: ${formData.occasion}\nColors: ${formData.colors}\nSize: ${formData.size}\nMessage: ${formData.message}`;
-
-      const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-      window.open(url, '_blank');
-    } catch (error) {
-      console.error("Failed to save custom order", error);
-      alert("There was an issue saving your request. Please try again.");
-    }
-  };
 
   return (
     <div className="page-wrapper custom-order-page">
