@@ -1,17 +1,75 @@
-# React + Vite
+# Lumé - Handmade Ribbon Roses Boutique
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Lumé** is a modern, full-stack e-commerce web application dedicated to showcasing and selling custom handmade ribbon roses. Built with bleeding-edge web technologies, it features an interactive shopping experience, custom order flows, and a comprehensive admin dashboard.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🌟 Key Features
 
-## React Compiler
+* **Interactive Storefront:** Browse a carefully curated gallery of ribbon roses with 3D bouquet visualization.
+* **Secure Payments:** Fully integrated **Stripe** payment processing for safe and seamless checkouts.
+* **Customer Portals:** Users can create accounts, track their orders, save favorites to a wishlist, and leave reviews.
+* **Custom Orders:** Dedicated flow for users to request bespoke bouquet arrangements.
+* **Admin Dashboard:** A secured area for store owners to manage inventory, update order statuses, generate promo codes, and view sales data.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠️ Technology Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-CodeRabbit review test update
+* **Frontend:** React 19, Vite, React Router DOM
+* **Backend & Database:** Supabase (PostgreSQL, Authentication, Edge Functions)
+* **Payments:** Stripe (@stripe/react-stripe-js)
+* **UI/UX:** Lucide React (Icons), Recharts (Data Visualization), React Parallax Tilt (Hover Effects)
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Ensure you have **Node.js** (v18+) and **npm** installed on your machine. You will also need active accounts for **Supabase** and **Stripe** to configure the backend and payment systems.
+
+### Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone <repository-url>
+    cd lume
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Environment Variables:**
+    Create a `.env` file in the root directory and configure your keys:
+    ```env
+    VITE_SUPABASE_URL=your_supabase_project_url
+    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+    VITE_STRIPE_PUBLIC_KEY=your_stripe_publishable_key
+    ```
+
+4.  **Start the Development Server:**
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 🗄️ Database Structure
+
+The application utilizes Supabase for data management. Ensure the following tables are set up:
+
+* `products`: Stores item details, pricing, and image URLs.
+* `inventory`: Manages stock levels and availability for products.
+* `orders`: Tracks customer purchases, current fulfillment statuses, and tracking IDs.
+* `promocodes`: Handles active discount campaigns and codes.
+* `wishlist`: Links authenticated users to their favorited products.
+* `reviews`: Stores user feedback, ratings, and testimonials.
+
+---
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page if you want to contribute to the codebase.
