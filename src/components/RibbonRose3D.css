@@ -1,0 +1,14 @@
+.rr-scene{width:340px;height:340px;perspective:900px;position:relative;display:flex;align-items:center;justify-content:center}
+.rr-flower{width:4px;height:4px;position:relative;transform-style:preserve-3d;animation:rr-spin 9s linear infinite}
+@keyframes rr-spin{from{transform:rotateY(0deg) rotateX(22deg)}to{transform:rotateY(360deg) rotateX(22deg)}}
+.rr-petal{position:absolute;top:0;left:0;border-radius:50% 0 50% 0;transform-origin:center bottom;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.25))}
+.rr-outer{width:72px;height:105px;margin-left:-36px;margin-top:-2px;background:linear-gradient(145deg,#8b1a2e 0%,#d94060 55%,#f0899a 100%);opacity:0.92}
+.rr-mid{width:54px;height:78px;margin-left:-27px;margin-top:-2px;background:linear-gradient(145deg,#6d1422 0%,#b83050 55%,#e06878 100%);opacity:0.96}
+.rr-inner{width:36px;height:52px;margin-left:-18px;margin-top:-2px;background:linear-gradient(145deg,#4e0e18 0%,#8c2035 55%,#c04558 100%);opacity:1}
+.rr-bud{position:absolute;top:-20px;left:-20px;width:40px;height:40px;background:radial-gradient(circle at 38% 38%,#9b2535,#35080e);border-radius:50%;box-shadow:0 0 24px rgba(155,37,53,0.6);transform:translateZ(8px)}
+.rr-glow{position:absolute;width:220px;height:70px;background:radial-gradient(ellipse,rgba(200,50,80,0.35) 0%,transparent 70%);bottom:10px;left:50%;transform:translateX(-50%);border-radius:50%;animation:rr-glow-pulse 3s ease-in-out infinite alternate;pointer-events:none}
+@keyframes rr-glow-pulse{from{opacity:0.4;transform:translateX(-50%) scaleX(0.85)}to{opacity:0.9;transform:translateX(-50%) scaleX(1.2)}}
+.rr-sparkle{position:absolute;width:5px;height:5px;background:#f5d78e;border-radius:50%;animation:rr-spark linear infinite;opacity:0;box-shadow:0 0 6px #f5d78e}
+@keyframes rr-spark{0%{transform:translateY(0) scale(0);opacity:0}15%{transform:translateY(-20px) scale(1);opacity:0.9}85%{transform:translateY(-80px) scale(0.6);opacity:0.4}100%{transform:translateY(-110px) scale(0);opacity:0}}
+.rr-ring{position:absolute;border-radius:50%;border:1.5px solid rgba(217,64,96,0.22);animation:rr-ring-expand 4s ease-out infinite;pointer-events:none}
+@keyframes rr-ring-expand{0%{transform:scale(0.4);opacity:0.7}100%{transform:scale(1.6);opacity:0}}
