@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Instagram, MapPin, MessageCircle, Sparkles, Mail, Send } from 'lucide-react';
+import { Instagram, MapPin, Sparkles, Mail, Send } from 'lucide-react';
 import './ContactPage.css';
 
 const ContactPage = () => {
@@ -52,19 +52,6 @@ const ContactPage = () => {
           {/* Right Side: Interactive Cards & Email Form */}
           <div className="contact-cards-container">
             
-            {/* WhatsApp Card */}
-            <div className="contact-method-card glass-panel">
-              <div className="method-icon wa">
-                <MessageCircle size={24} />
-              </div>
-              <div className="method-content">
-                <h3>WhatsApp Concierge</h3>
-                <p>Direct line to the artisan for custom requests and pricing.</p>
-                <a href="https://wa.me/910000000000" className="btn-text-link" target="_blank" rel="noreferrer">
-                  Chat Now →
-                </a>
-              </div>
-            </div>
 
             {/* Email & Location Mini-Grid */}
             <div className="contact-info-subgrid">

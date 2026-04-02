@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageCircle, Instagram, ShoppingBag, ShoppingCart, Heart } from 'lucide-react';
+import { Instagram, ShoppingBag, ShoppingCart, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import OrderModal from './OrderModal';
@@ -237,13 +237,7 @@ const Gallery = ({ limit }) => {
                     >
                       <ShoppingCart size={18} />
                     </button>
-                    <button 
-                      className="btn-icon whatsapp"
-                      onClick={() => handleOpenModal(item, 'whatsapp')}
-                      title="Order via WhatsApp"
-                    >
-                      <MessageCircle size={18} />
-                    </button>
+
                     <button 
                       className="btn-icon instagram"
                       onClick={() => handleOpenModal(item, 'instagram')}

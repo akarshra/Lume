@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, MessageCircle, MapPin, Mail, Sparkles, MoveRight, CheckCircle } from 'lucide-react';
+import { Instagram, MapPin, Mail, Sparkles, MoveRight, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import './Footer.css';
 
@@ -34,7 +34,7 @@ const Footer = () => {
           </p>
           <div className="social-links">
             <a href="https://instagram.com" className="social-icon"><Instagram size={20} /></a>
-            <a href="https://wa.me/910000000000" className="social-icon"><MessageCircle size={20} /></a>
+            
           </div>
         </div>
 

@@ -200,9 +200,6 @@ const CustomOrderPage = () => {
                    {isStripeLoading ? 'Connecting Securely...' : 'Pay ₹1000 Deposit Securely with Stripe'}
                  </button>
                  
-                 <button type="button" onClick={handleWhatsAppSubmit} className="btn-secondary" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                   <Send size={18} /> Request Quote via WhatsApp
-                 </button>
                </div>
              </form>
           )}
