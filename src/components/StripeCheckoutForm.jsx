@@ -18,7 +18,7 @@ const StripeCheckoutForm = ({ amountStr, onSuccess, onCancel }) => {
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: 'http://localhost:5173/success',
+        return_url: window.location.origin + '/success',
       },
       redirect: 'if_required',
     });

@@ -22,7 +22,7 @@ const SuccessPage = () => {
     );
   }
 
-  const grandTotal = parseInt(order.amount.replace(/[^0-9]/g, '')) || 0;
+  const grandTotal = parseInt(String(order.amount).replace(/[^0-9]/g, '')) || 0;
   const delivery = 100;
   const gstRate = 0.18;
   const subtotal = Math.round((grandTotal - delivery) / (1 + gstRate));
