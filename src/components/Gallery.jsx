@@ -46,11 +46,20 @@ const Gallery = ({ limit }) => {
         { id: '9', name: "Pastel Celebration Bloom", category: "Celebration", price: "₹1,399", description: "Soft pink ribbon blooms styled for joyful gifting and milestone moments.", image: "/images/ig/4.webp", igId: "l_u_m_eest._2026" },
         { id: '10', name: "Chocolate Ribbon Surprise", category: "Gift Box", price: "₹1,899", description: "A sweet ribbon bouquet paired with indulgent chocolates from our Instagram post.", image: "/images/ig/6.webp", igId: "l_u_m_eest._2026" }
       ];
-      
+      const mergeBouquets = (primary, fallback) => {
+        const seen = new Set();
+        return [...primary, ...fallback].filter((item) => {
+          const key = `${item.name || ''}|${item.image || ''}`.toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      };
+
       try {
         const data = await getProducts();
         if (data && data.length > 0) {
-          setBouquets(data);
+          setBouquets(mergeBouquets(data, manualSelection));
         } else {
           setBouquets(manualSelection);
         }
