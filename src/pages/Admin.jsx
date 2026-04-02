@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, ShoppingBag, Database, Tag, TrendingUp, Users, 
-  Plus, Trash2, Send, Download, Search, X, AlertTriangle, ArrowUpRight, Gift 
+  Plus, Trash2, Send, Lock, Download, Search, X, AlertTriangle, ArrowUpRight, Gift 
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { 
@@ -10,11 +10,13 @@ import {
   getPromos, addPromo as addPromoApi, deletePromoApi,
   getProducts, addProduct, deleteProduct
 } from '../services/api';
-
+import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import './Admin.css';
 
 const Admin = () => {
+  const { user, loading } = useAuth();
+
   const [activeTab, setActiveTab] = useState('overview');
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,11 +35,13 @@ const Admin = () => {
   const [isPromoModalOpen, setIsPromoModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchOrders();
-    fetchInventory();
-    fetchPromos();
-    fetchProducts();
-  }, []);
+    if (user) {
+      fetchOrders();
+      fetchInventory();
+      fetchPromos();
+      fetchProducts();
+    }
+  }, [user]);
 
   const fetchProducts = async () => {
     try {
@@ -247,6 +251,23 @@ const Admin = () => {
   ];
 
   const lowStockItems = inventory.filter(i => !i.inStock || Number(i.stock) < 5);
+
+  if (loading) {
+    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#64748b' }}>Loading...</p></div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="admin-login-screen">
+        <div className="login-card glass-panel" style={{textAlign: 'center', padding: '3rem'}}>
+          <Lock size={48} className="lock-icon" style={{margin: '0 auto 1rem'}} />
+          <h2>Admin Restricted</h2>
+          <p style={{marginBottom: '2rem'}}>Please log in from the Account page to access the admin dashboard.</p>
+          <a href="/account" className="btn-primary" style={{display: 'inline-block', textDecoration: 'none'}}>Go to Login</a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-layout">
