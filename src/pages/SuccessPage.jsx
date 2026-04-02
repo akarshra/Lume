@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { CheckCircle2, Download, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, Download, ShieldCheck, ArrowLeft, Home, Search, ShoppingBag } from 'lucide-react';
 import '../components/BillModal.css';
 
 const SuccessPage = () => {
@@ -131,6 +131,18 @@ const SuccessPage = () => {
               <Download size={18} /> Print & Save Receipt
             </button>
           </div>
+        </div>
+
+        <div className="no-print" style={{ display: "flex", gap: "12px", marginTop: "24px", maxWidth: "800px", margin: "24px auto 0", flexWrap: "wrap" }}>
+          <a href="/" style={{ flex: 1, minWidth: "140px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "14px 20px", background: "white", border: "2px solid #e2e8f0", borderRadius: "12px", color: "#334155", fontWeight: "600", textDecoration: "none", transition: "0.2s" }}>
+            <Home size={18} /> Go to Home
+          </a>
+          <a href="/track" style={{ flex: 1, minWidth: "140px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "14px 20px", background: "white", border: "2px solid #e2e8f0", borderRadius: "12px", color: "#334155", fontWeight: "600", textDecoration: "none", transition: "0.2s" }}>
+            <Search size={18} /> Track My Order
+          </a>
+          <a href="/gallery" style={{ flex: 2, minWidth: "180px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "14px 20px", background: "var(--primary-dark)", borderRadius: "12px", color: "white", fontWeight: "600", textDecoration: "none", transition: "0.2s" }}>
+            <ShoppingBag size={18} /> Continue Shopping
+          </a>
         </div>
       </div>
     </div>
