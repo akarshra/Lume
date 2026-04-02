@@ -74,18 +74,7 @@ const Hero = () => {
         {/* 3D Bouquet Container */}
         <div className="hero-visual parallax" data-speed="-0.2">
           <div className="interactive-3d-wrapper" ref={visualRef}>
-            <div className="rose-image-container animate-float-slow">
-              <img 
-                src="/hero-rose-2.png" 
-                alt="Premium 3D Ribbon Rose" 
-                className="hero-3d-rose"
-              />
-              <div className="rose-glow"></div>
-            </div>
-            {/* Keeping the CSS bouquet as a decorative background element */}
-            <div style={{ position: 'absolute', zIndex: -1, opacity: 0.5, transform: 'scale(0.8) translateY(50px)' }}>
-              <Bouquet3D />
-            </div>
+            <Bouquet3D />
           </div>
         </div>
       </div>
