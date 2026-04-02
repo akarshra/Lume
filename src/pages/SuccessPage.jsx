@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { CheckCircle2, Download, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, Download, ShieldCheck, ArrowLeft, Home, Search, ShoppingBag } from 'lucide-react';
 import '../components/BillModal.css';
 
 const SuccessPage = () => {
   const location = useLocation();
-  const [order] = useState(location.state?.order);
+  const [order] = useState(() => {
+    if (location.state?.order) {
+      localStorage.setItem('lume_last_order', JSON.stringify(location.state.order));
+      return location.state.order;
+    }
+    try { return JSON.parse(localStorage.getItem('lume_last_order')); } catch { return null; }
+  });
   const { clearCart } = useCart();
-
-  useEffect(() => {
-    clearCart();
-  }, [clearCart]);
+  useEffect(() => { clearCart(); }, [clearCart]);
 
   if (!order) {
     return (
@@ -22,11 +25,12 @@ const SuccessPage = () => {
     );
   }
 
-  const grandTotal = parseInt(order.amount.replace(/[^0-9]/g, '')) || 0;
-  const delivery = 100;
+  const grandTotal = parseInt(String(order.amount).replace(/[^0-9]/g, '')) || 0;
+  const isCustomDeposit = grandTotal === 1000 && order.paymentMethod === 'stripe';
+  const delivery = isCustomDeposit ? 0 : 100;
   const gstRate = 0.18;
-  const subtotal = Math.round((grandTotal - delivery) / (1 + gstRate));
-  const gstAmount = grandTotal - delivery - subtotal;
+  const subtotal = grandTotal > (delivery + 10) ? Math.round((grandTotal - delivery) / (1 + gstRate)) : grandTotal;
+  const gstAmount = grandTotal > (delivery + 10) ? grandTotal - delivery - subtotal : 0;
 
   const handlePrint = () => {
     window.print();
@@ -63,6 +67,7 @@ const SuccessPage = () => {
               <div className="status-text">
                 <h2>Payment Confirmed</h2>
                 <p>Invoice No: #LME-{order.id.slice(-6).toUpperCase()}</p>
+              <p style={{marginTop:"6px",fontWeight:"700",fontSize:"0.95rem",color:"#166534",letterSpacing:"1px",background:"#dcfce7",padding:"4px 10px",borderRadius:"6px",display:"inline-block"}}>🔍 Tracking ID: {order.id}</p>
               </div>
             </div>
             <div className="status-meta">
@@ -130,6 +135,18 @@ const SuccessPage = () => {
               <Download size={18} /> Print & Save Receipt
             </button>
           </div>
+        </div>
+
+        <div className="no-print" style={{ display: "flex", gap: "12px", marginTop: "24px", maxWidth: "800px", margin: "24px auto 0", flexWrap: "wrap" }}>
+          <a href="/" style={{ flex: 1, minWidth: "140px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "14px 20px", background: "white", border: "2px solid #e2e8f0", borderRadius: "12px", color: "#334155", fontWeight: "600", textDecoration: "none", transition: "0.2s" }}>
+            <Home size={18} /> Go to Home
+          </a>
+          <a href="/track" style={{ flex: 1, minWidth: "140px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "14px 20px", background: "white", border: "2px solid #e2e8f0", borderRadius: "12px", color: "#334155", fontWeight: "600", textDecoration: "none", transition: "0.2s" }}>
+            <Search size={18} /> Track My Order
+          </a>
+          <a href="/gallery" style={{ flex: 2, minWidth: "180px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "14px 20px", background: "var(--primary-dark)", borderRadius: "12px", color: "white", fontWeight: "600", textDecoration: "none", transition: "0.2s" }}>
+            <ShoppingBag size={18} /> Continue Shopping
+          </a>
         </div>
       </div>
     </div>

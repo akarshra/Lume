@@ -19,9 +19,18 @@ export const CartProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    // Save cart to local storage whenever it changes
     localStorage.setItem('lume_cart', JSON.stringify(cartItems));
   }, [cartItems]);
+
+  useEffect(() => {
+    const syncCart = (e) => {
+      if (e.key === 'lume_cart' && e.newValue) {
+        try { setCartItems(JSON.parse(e.newValue)); } catch (err) { console.warn('Cart sync error',err); }
+      }
+    };
+    window.addEventListener('storage', syncCart);
+    return () => window.removeEventListener('storage', syncCart);
+  }, []);  
 
   const addToCart = (product) => {
     setCartItems(prev => {

@@ -13,6 +13,7 @@ import Navigation from './components/Navigation';
 import Footer from './components/Footer';
 import AccountPage from './pages/AccountPage';
 import OrderTrackingPage from './pages/OrderTrackingPage';
+import NotFoundPage from './pages/NotFoundPage';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import './App.css';

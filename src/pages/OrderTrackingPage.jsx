@@ -23,7 +23,7 @@ const OrderTrackingPage = () => {
       } else {
         setError('No order found with that ID. Please check your bill number and try again.');
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred while tracking your order. Please try again later.');
     } finally {
       setLoading(false);
@@ -88,7 +88,7 @@ const OrderTrackingPage = () => {
                 placeholder="e.g. 1711204812345" 
                 value={trackId}
                 onChange={(e) => setTrackId(e.target.value)}
-                style={{ width: '100%', padding: '16px. 16px 16px 48px', border: '2px solid #e2e8f0', borderRadius: '12px', fontSize: '1rem', outline: 'none', transition: '0.2s' }}
+                style={{ width: '100%', padding: '16px 16px 16px 48px', border: '2px solid #e2e8f0', borderRadius: '12px', fontSize: '1rem', outline: 'none', transition: '0.2s' }}
               />
             </div>
             <button type="submit" className="btn-primary" disabled={loading} style={{ padding: '0 30px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -129,6 +129,28 @@ const OrderTrackingPage = () => {
               {renderTimelineItem(3, 'In Transit', 'Your arrangement is securely on its way to you.', Truck, getStatusIndex(order.status))}
               {renderTimelineItem(4, 'Delivered', 'The bouquet has been successfully delivered.', CheckCircle, getStatusIndex(order.status))}
             </div>
+          </div>
+        )}
+
+        {order && (
+          <div className="glass-panel reveal-up" style={{ padding: "30px", background: "white" }}>
+            <h3 style={{ fontSize: "1.1rem", marginBottom: "16px", color: "#0f172a" }}>
+              📍 Shipment Location
+            </h3>
+            <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid #e2e8f0" }}>
+              <iframe
+                title="Order Location"
+                width="100%"
+                height="280"
+                frameBorder="0"
+                scrolling="no"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=87.9%2C26.0%2C88.1%2C26.2&layer=mapnik&marker=26.1%2C88.0"
+                style={{ display: "block" }}
+              />
+            </div>
+            <p style={{ marginTop: "12px", fontSize: "0.82rem", color: "#64748b", textAlign: "center" }}>
+              Dispatched from: <strong>Lume Studio, Kishanganj, Bihar 855107</strong>
+            </p>
           </div>
         )}
 

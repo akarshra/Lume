@@ -7,17 +7,29 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsToolti
 import { 
   getOrders, updateOrderStatus, deleteOrder as deleteOrderApi, clearAllOrders as clearAllOrdersApi,
   getInventory, addInventory as addInventoryApi, updateInventoryStatus, deleteInventoryItem,
-  getPromos, deletePromoApi,
+  getPromos, addPromo as addPromoApi, deletePromoApi,
   getProducts, addProduct, deleteProduct
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
 import './Admin.css';
+
+const ADMIN_EMAIL = 'akarshraj2710@gmail.com';
 
 const Admin = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user !== undefined && (!user || user.email !== ADMIN_EMAIL)) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
+
   const [activeTab, setActiveTab] = useState('overview');
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [uploading, setUploading] = useState(false);
 
   // --- STATE MANAGEMENT ---
@@ -29,6 +41,8 @@ const Admin = () => {
   const [newItem, setNewItem] = useState({ name: '', stock: '', unit: 'Rolls' });
   const [newProduct, setNewProduct] = useState({ name: '', category: 'Signature Roses', price: '', description: '', image: '', color: '', igId: '' });
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [newPromo, setNewPromo] = useState({ code: '', discount: '', usage: '0' });
+  const [isPromoModalOpen, setIsPromoModalOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -142,6 +156,16 @@ const Admin = () => {
     }
   };
 
+  const handleAddPromo = async (e) => {
+    e.preventDefault();
+    try {
+      const added = await addPromoApi({ code: newPromo.code.toUpperCase(), discount: newPromo.discount, usage: parseInt(newPromo.usage) || 0 });
+      setPromoCodes([...promoCodes, added]);
+      setNewPromo({ code: '', discount: '', usage: '0' });
+      setIsPromoModalOpen(false);
+    } catch (error) { console.error('Error adding promo', error); }
+  };
+
   const deletePromo = async (code) => {
     try {
       await deletePromoApi(code);
@@ -203,8 +227,12 @@ const Admin = () => {
   const processRevenueData = (allOrders) => {
     const grouped = {};
     allOrders.forEach(o => {
-      // Depending on locale string, it might be separated by a comma. If it is already a timestamp, parse it
-      const dateKey = o.date ? String(o.date).split(',')[0].trim() : 'Unknown';
+      let dateKey = 'Unknown';
+      if (o.created_at) {
+        dateKey = new Date(o.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+      } else if (o.date) {
+        dateKey = String(o.date).split(',')[0].trim();
+      }
       if (!grouped[dateKey]) grouped[dateKey] = 0;
       
       let amount = 0;
@@ -247,6 +275,17 @@ const Admin = () => {
     );
   }
 
+  if (user.email !== ADMIN_EMAIL) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
+        <Lock size={48} color="#9b1b30" />
+        <h2 style={{ color: '#9b1b30' }}>Access Restricted</h2>
+        <p style={{ color: '#64748b' }}>You do not have permission to view this page.</p>
+        <a href="/" className="btn-secondary">Go Home</a>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-layout">
       <aside className="admin-sidebar">
@@ -268,7 +307,7 @@ const Admin = () => {
 
       <main className="admin-main">
         <header className="main-header">
-          <div className="search-bar"><Search size={18} /><input type="text" placeholder="Search records..." /></div>
+          <div className="search-bar"><Search size={18} /><input type="text" placeholder="Search orders, products..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} /></div>
           <div className="admin-avatar">A</div>
         </header>
 
@@ -340,7 +379,7 @@ const Admin = () => {
                 <table className="admin-table">
                   <thead><tr><th>Customer</th><th>Item</th><th>Status</th><th>Notify</th><th>Action</th></tr></thead>
                   <tbody>
-                    {orders.map(o => (
+                    { orders.filter(o => !searchQuery || (o.customer && o.customer.toLowerCase().includes(searchQuery.toLowerCase())) || (o.item && o.item.toLowerCase().includes(searchQuery.toLowerCase())) || (o.id && o.id.includes(searchQuery))).map(o => (
                       <tr key={o.id}>
                         <td><strong>{o.customer}</strong><br/><small>{o.phone}</small></td>
                         <td>{o.item}</td>
@@ -403,7 +442,7 @@ const Admin = () => {
                 <table className="admin-table">
                   <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Actions</th></tr></thead>
                   <tbody>
-                    {products.map(p => (
+                    { products.filter(p => !searchQuery || (p.name && p.name.toLowerCase().includes(searchQuery.toLowerCase())) || (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))).map(p => (
                       <tr key={p.id}>
                         <td><img src={p.image} alt={p.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} /></td>
                         <td><strong>{p.name}</strong><br/><small>{p.color}</small></td>
@@ -420,7 +459,7 @@ const Admin = () => {
 
           {activeTab === 'promos' && (
             <div className="admin-section fade-in">
-              <div className="section-header"><h2>Promo Codes</h2></div>
+              <div className="section-header"><h2>Promo Codes</h2><button className="btn-primary" onClick={() => setIsPromoModalOpen(true)}><Plus size={18}/> Add Promo</button></div>
               <div className="promo-grid">
                 {promoCodes.map((p, i) => (
                   <div className="promo-card" key={i}>
@@ -434,6 +473,20 @@ const Admin = () => {
           )}
         </div>
       </main>
+
+      {isPromoModalOpen && (
+        <div className="admin-modal-overlay">
+          <div className="admin-modal glass-panel">
+            <div className="modal-header"><h3>New Promo Code</h3><button onClick={() => setIsPromoModalOpen(false)}><X size={20}/></button></div>
+            <form onSubmit={handleAddPromo}>
+              <div className="form-group"><label>Code</label><input type="text" required placeholder="e.g. LUME20" value={newPromo.code} onChange={e => setNewPromo({...newPromo, code: e.target.value})} /></div>
+              <div className="form-group"><label>Discount</label><input type="text" required placeholder="e.g. 20% or ₹200" value={newPromo.discount} onChange={e => setNewPromo({...newPromo, discount: e.target.value})} /></div>
+              <div className="form-group"><label>Max Uses</label><input type="number" placeholder="0 = unlimited" value={newPromo.usage} onChange={e => setNewPromo({...newPromo, usage: e.target.value})} /></div>
+              <button type="submit" className="btn-primary w-100">Save Promo Code</button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {isInventoryModalOpen && (
         <div className="admin-modal-overlay">

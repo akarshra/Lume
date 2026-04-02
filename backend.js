@@ -27,7 +27,7 @@ app.post('/api/create-payment-intent', async (req, res) => {
     const { items, isCustom } = req.body;
     
     // Parse the totalAmountStr which comes in like "₹1,987"
-    let totalAmountStr = items[0]?.price || "0";
+    let totalAmountStr = (items && items[0]) ? items[0].price : "0";
     let rawAmount = 0;
     
     if (typeof totalAmountStr === 'string') {
@@ -38,7 +38,7 @@ app.post('/api/create-payment-intent', async (req, res) => {
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: rawAmount > 0 ? rawAmount : 5000, // At least ₹50
+      amount: isCustom ? 100000 : (rawAmount > 0 ? rawAmount : 5000),
       currency: 'inr',
       automatic_payment_methods: { enabled: true },
     });
