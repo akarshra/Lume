@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShoppingCart, Heart, Eye, Sparkles, Filter } from 'lucide-react';
-import './bouquet3d.css'; 
+import './Bouquet3D.css';
 
 const Bouquet3d = () => {
   const [filter, setFilter] = useState('All');
@@ -19,18 +19,18 @@ const Bouquet3d = () => {
   return (
     <div className="b3d-page-root">
       <div className="b3d-container">
-        
+
         <header className="b3d-header">
           <div className="b3d-badge-wrapper">
-            <span className="b3d-premium-tag"><Sparkles size={14}/> Hand-Folded in Kishanganj</span>
+            <span className="b3d-premium-tag"><Sparkles size={14} /> Hand-Folded in Kishanganj</span>
           </div>
           <h1 className="b3d-main-title">The Ribbon Collection</h1>
-          
+
           <div className="b3d-filter-wrapper">
             <div className="b3d-filter-pills">
               {['All', 'Classic', 'Premium', 'Luxury'].map(cat => (
-                <button 
-                  key={cat} 
+                <button
+                  key={cat}
                   className={`b3d-tab ${filter === cat ? 'is-active' : ''}`}
                   onClick={() => setFilter(cat)}
                 >
@@ -46,18 +46,18 @@ const Bouquet3d = () => {
             <div className="b3d-card" key={p.id}>
               <div className="b3d-visual-area">
                 {p.tag && <div className="b3d-floating-label">{p.tag}</div>}
-                
+
                 {/* Visual Placeholder */}
                 <div className="b3d-art-content">
                   <div className="b3d-glow-effect"></div>
                 </div>
 
                 <div className="b3d-hover-overlay">
-                  <button className="b3d-icon-btn"><Heart size={18}/></button>
-                  <button className="b3d-icon-btn"><Eye size={18}/></button>
+                  <button className="b3d-icon-btn"><Heart size={18} /></button>
+                  <button className="b3d-icon-btn"><Eye size={18} /></button>
                 </div>
               </div>
-              
+
               <div className="b3d-info-area">
                 <span className="b3d-cat-label">{p.category}</span>
                 <h3 className="b3d-item-name">{p.name}</h3>
