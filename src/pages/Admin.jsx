@@ -22,7 +22,7 @@ const Admin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user !== undefined && (!user || user.email !== ADMIN_EMAIL)) {
+    if (user && user.email !== ADMIN_EMAIL) {
       navigate('/', { replace: true });
     }
   }, [user, navigate]);
