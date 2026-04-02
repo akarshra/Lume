@@ -7,7 +7,7 @@ import './Admin.css';
 const AccountPage = () => {
   const { user, signIn, signUp, signOut } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('akarshsrivastav322@gmail.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [myOrders, setMyOrders] = useState([]);
