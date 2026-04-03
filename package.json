@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"node backend.js\"",
+    "dev": "concurrently \"vite\" \"node api/index.js\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "node backend.js"
+    "start": "node api/index.js"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.1.0",

@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Load the .env.local variables like VITE_SUPABASE_URL and STRIPE_SECRET_KEY
 const __dirname = dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: join(__dirname, '.env.local') });
+dotenv.config({ path: join(__dirname, '../.env.local') });
 
 import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY || 're_fallback');
@@ -155,7 +155,12 @@ app.post('/api/update-status', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`✅ Secure Data & Payment Server running locally on http://localhost:${port}`);
-  console.log(`Ready to process Stripe Payments!`);
-});
+// Only run app.listen locally to prevent port binding issues on Vercel Serverless
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
+    console.log(`✅ Secure Data & Payment Server running locally on http://localhost:${port}`);
+    console.log(`Ready to process Stripe Payments!`);
+  });
+}
+
+export default app;
