@@ -9,6 +9,7 @@ import StripeCheckoutForm from '../components/StripeCheckoutForm';
 import './CustomOrderPage.css';
 
 const stripePromise = loadStripe('pk_test_51T4bcOLkWChg5JeJdTPGkNttxonAEO6SuRYpKMuxggvRKXRXRCbaxwgp9wBwwy7anqdJrck1wPNXmXE9vekGtZk700Ob1bx4pL');
+const paymentApiBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
 const CustomOrderPage = () => {
   const navigate = useNavigate();
@@ -41,10 +42,20 @@ const CustomOrderPage = () => {
     setIsStripeLoading(true);
     setApiError(null);
     try {
-      const response = await fetch('/api/create-payment-intent', {
+      const response = await fetch(`${paymentApiBase}/api/create-payment-intent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isCustom: true }),
+        body: JSON.stringify({
+          isCustom: true,
+          metadata: {
+            source: 'custom-order',
+            customerName: formData.name,
+            phone: formData.phone,
+            occasion: formData.occasion,
+            size: formData.size,
+            userId: user?.id || '',
+          },
+        }),
       });
       const data = await response.json();
       if (data.error) setApiError(data.error);

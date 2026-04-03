@@ -7,7 +7,7 @@ import './Admin.css';
 const AccountPage = () => {
   const { user, signIn, signUp, signOut } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('akarshsrivastava322@gmail.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [myOrders, setMyOrders] = useState([]);
@@ -29,7 +29,7 @@ const AccountPage = () => {
   const handleAuth = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     try {
       if (isLogin) {
         const { error } = await signIn(email, password);
@@ -42,6 +42,14 @@ const AccountPage = () => {
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setEmail('');
+    setPassword('');
+    setError('');
+    setIsLogin(true);
   };
 
   if (!user) {
@@ -69,7 +77,7 @@ const AccountPage = () => {
     <div style={{ padding: '100px 5%', maxWidth: '1200px', margin: '0 auto', color: 'var(--text-color)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h2>My Account</h2>
-        <button onClick={signOut} className="btn-outline-danger">Sign Out</button>
+        <button onClick={handleSignOut} className="btn-outline-danger">Sign Out</button>
       </div>
 
       <div className="content-card glass-panel" style={{ padding: '3rem', minHeight: '400px' }}>

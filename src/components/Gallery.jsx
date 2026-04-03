@@ -41,13 +41,25 @@ const Gallery = ({ limit }) => {
         { id: '4', name: "Golden Proposal", category: "Proposal", price: "₹2,499", description: "Luxurious soft gold and cream ribbon roses, arranged in our signature premium box.", image: "/images/ig/4.webp", igId: "l_u_m_eest._2026" },
         { id: '5', name: "Lavender Dreams", category: "Birthday", price: "₹999", description: "A sweet combination of pastel lavender and white ribbons for a perfect birthday gift.", image: "/images/ig/5.webp", igId: "l_u_m_eest._2026" },
         { id: '6', name: "Soft Blush Elegance", category: "Custom", price: "From ₹1,499", description: "Customized pastel ribbons blending perfectly for weddings and special moments.", image: "/images/ig/6.webp", igId: "l_u_m_eest._2026" },
-        { id: '7', name: "Bridal White Bouquet", category: "Wedding", price: "₹3,499", description: "Pristine white silk ribbons formed into an opulent bridal arrangement.", image: "/images/ig/7.png", igId: "l_u_m_eest._2026" }
+        { id: '7', name: "Bridal White Bouquet", category: "Wedding", price: "₹3,499", description: "Pristine white silk ribbons formed into an opulent bridal arrangement.", image: "/images/ig/7.png", igId: "l_u_m_eest._2026" },
+        { id: '8', name: "Monochrome Luxe Box", category: "Luxury", price: "₹2,199", description: "A bold black-and-silver bouquet inspired by our monochrome Instagram reveal.", image: "/images/ig/2.webp", igId: "l_u_m_eest._2026" },
+        { id: '9', name: "Pastel Celebration Bloom", category: "Celebration", price: "₹1,399", description: "Soft pink ribbon blooms styled for joyful gifting and milestone moments.", image: "/images/ig/4.webp", igId: "l_u_m_eest._2026" },
+        { id: '10', name: "Chocolate Ribbon Surprise", category: "Gift Box", price: "₹1,899", description: "A sweet ribbon bouquet paired with indulgent chocolates from our Instagram post.", image: "/images/ig/6.webp", igId: "l_u_m_eest._2026" }
       ];
-      
+      const mergeBouquets = (primary, fallback) => {
+        const seen = new Set();
+        return [...primary, ...fallback].filter((item) => {
+          const key = `${item.name || ''}|${item.image || ''}`.toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      };
+
       try {
         const data = await getProducts();
         if (data && data.length > 0) {
-          setBouquets(data);
+          setBouquets(mergeBouquets(data, manualSelection));
         } else {
           setBouquets(manualSelection);
         }

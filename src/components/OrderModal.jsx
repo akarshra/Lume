@@ -6,6 +6,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import StripeCheckoutForm from './StripeCheckoutForm';
 
 const stripePromise = loadStripe('pk_test_51T4bcOLkWChg5JeJdTPGkNttxonAEO6SuRYpKMuxggvRKXRXRCbaxwgp9wBwwy7anqdJrck1wPNXmXE9vekGtZk700Ob1bx4pL');
+const paymentApiBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
 const OrderModal = ({ isOpen, onClose, product, onConfirm, platform, isCustomRequest }) => {
   const [formData, setFormData] = useState({ 
@@ -35,10 +36,20 @@ const OrderModal = ({ isOpen, onClose, product, onConfirm, platform, isCustomReq
       setIsLoadingSecret(true);
       setApiError(null);
       try {
-        const response = await fetch('/api/create-payment-intent', {
+        const response = await fetch(`${paymentApiBase}/api/create-payment-intent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: [{ name: product.name, price: product.price }], isCustom: isCustomRequest }),
+          body: JSON.stringify({
+            items: [{ name: product.name, price: product.price }],
+            isCustom: isCustomRequest,
+            metadata: {
+              source: 'order-modal',
+              customerName: formData.name,
+              phone: formData.phone,
+              address: formData.address || '',
+              orderType: platform || 'direct',
+            },
+          }),
         });
         const data = await response.json();
         if (data.error) {

@@ -15,14 +15,14 @@ import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import './Admin.css';
 
-const ADMIN_EMAIL = 'akarshraj2710@gmail.com';
+const ADMIN_EMAIL = 'akarshsrivastava322@gmail.com';
 
 const Admin = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user !== undefined && (!user || user.email !== ADMIN_EMAIL)) {
+    if (user && user.email !== ADMIN_EMAIL) {
       navigate('/', { replace: true });
     }
   }, [user, navigate]);

@@ -2,14 +2,19 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, ShoppingCart, User, PackageSearch } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import './Navigation.css';
+
+const ADMIN_EMAIL = 'akarshsrivastava322@gmail.com';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { getCartCount } = useCart();
+  const { user } = useAuth();
   const cartItemCount = getCartCount();
+  const isOwner = user?.email === ADMIN_EMAIL;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -35,7 +40,7 @@ const Navigation = () => {
           <Link to="/custom" className={isActive('/custom')} onClick={() => setIsOpen(false)}>Custom Order</Link>
           <Link to="/testimonials" className={isActive('/testimonials')} onClick={() => setIsOpen(false)}>Love</Link>
           <Link to="/contact" className={isActive('/contact')} onClick={() => setIsOpen(false)}>Contact</Link>
-          <Link to="/admin" className="nav-admin" onClick={() => setIsOpen(false)}>Admin</Link>
+          {isOwner && <Link to="/admin" className="nav-admin" onClick={() => setIsOpen(false)}>Admin</Link>}
         </div>
 
         <div className="nav-actions">
