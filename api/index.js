@@ -15,7 +15,7 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY || 're_fallback');
 
 const app = express();
-const port = 5001;
+const port = process.env.PORT || 5001;
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
@@ -155,10 +155,10 @@ app.post('/api/update-status', async (req, res) => {
   }
 });
 
-// Only run app.listen locally to prevent port binding issues on Vercel Serverless
-if (process.env.NODE_ENV !== 'production') {
+// Only run app.listen locally or on Render to prevent port binding issues on Vercel Serverless
+if (!process.env.VERCEL) {
   app.listen(port, () => {
-    console.log(`✅ Secure Data & Payment Server running locally on http://localhost:${port}`);
+    console.log(`✅ Secure Data & Payment Server running locally on port ${port}`);
     console.log(`Ready to process Stripe Payments!`);
   });
 }
