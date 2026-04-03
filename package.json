@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "backend": "node backend.js"
+    "backend": "node backend.js",
+    "start": "node backend.js"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.1.0",
