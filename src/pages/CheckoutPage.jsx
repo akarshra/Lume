@@ -7,6 +7,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import StripeCheckoutForm from '../components/StripeCheckoutForm';
 import { addOrder, getPromos } from '../services/api';
+
 import './CheckoutPage.css';
 
 const stripePromise = loadStripe('pk_test_51T4bcOLkWChg5JeJdTPGkNttxonAEO6SuRYpKMuxggvRKXRXRCbaxwgp9wBwwy7anqdJrck1wPNXmXE9vekGtZk700Ob1bx4pL');
@@ -18,6 +19,7 @@ const CheckoutPage = () => {
   
   const [formData, setFormData] = useState({ 
     name: '', 
+    email: '',
     phone: '',
     address: '',
     paymentMethod: 'stripe'
@@ -91,6 +93,7 @@ const CheckoutPage = () => {
       id: Date.now().toString(),
       date: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }),
       customer: formData.name,
+      email: formData.email,
       phone: formData.phone,
       address: formData.address || "",
       paymentMethod: formData.paymentMethod,
@@ -113,7 +116,7 @@ const CheckoutPage = () => {
 
   const handleInitialFormSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone || !formData.address) return;
+    if (!formData.name || !formData.phone || !formData.email || !formData.address) return;
     
     if (formData.paymentMethod === 'stripe') {
       setIsLoadingSecret(true);
@@ -126,9 +129,11 @@ const CheckoutPage = () => {
         });
         const data = await response.json();
         
-        if (data?.error) {
+        if (!response.ok) {
+           throw new Error(data.error?.message || "Failed to create payment intent");
+        } else if (data.error) {
            setApiError(data.error.message || data.error);
-        } else if (data?.clientSecret) {
+        } else if (data.clientSecret) {
            setClientSecret(data.clientSecret);
         } else {
            throw new Error("Invalid response from payment server");
@@ -191,6 +196,19 @@ const CheckoutPage = () => {
                       onChange={handleChange} 
                       required 
                       placeholder="e.g. Jane Doe"
+                      style={{ width: '100%', padding: '12px 16px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '20px' }}>
+                    <label htmlFor="email" style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: '#555' }}>Email Address</label>
+                    <input 
+                      type="email" 
+                      id="email" 
+                      name="email" 
+                      value={formData.email} 
+                      onChange={handleChange} 
+                      required 
+                      placeholder="e.g. jane@example.com"
                       style={{ width: '100%', padding: '12px 16px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
                     />
                   </div>

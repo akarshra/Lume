@@ -25,7 +25,9 @@ const SuccessPage = () => {
     );
   }
 
-  const grandTotal = parseInt(String(order.amount).replace(/[^0-9]/g, '')) || 0;
+  const grandTotal = typeof order.amount === 'string' 
+    ? parseInt(order.amount.replace(/[^0-9]/g, '')) || 0
+    : Number(order.amount) || 0;
   const isCustomDeposit = grandTotal === 1000 && order.paymentMethod === 'stripe';
   const delivery = isCustomDeposit ? 0 : 100;
   const gstRate = 0.18;

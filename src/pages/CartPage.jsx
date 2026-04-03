@@ -11,9 +11,7 @@ const CartPage = () => {
   const [modalState, setModalState] = useState({ isOpen: false, platform: null });
   const navigate = useNavigate();
 
-  const handleOpenModal = (platform) => {
-    setModalState({ isOpen: true, platform });
-  };
+
 
   const handleCloseModal = () => {
     setModalState({ isOpen: false, platform: null });

@@ -39,6 +39,7 @@ function MainLayout() {
           <Route path="/success" element={<SuccessPage />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/track" element={<OrderTrackingPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
       {!isAdmin && <Footer />}

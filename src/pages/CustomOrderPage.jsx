@@ -15,6 +15,7 @@ const CustomOrderPage = () => {
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
     phone: '',
     occasion: 'Birthday',
     colors: '',
@@ -33,8 +34,8 @@ const CustomOrderPage = () => {
 
   const initStripePayment = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone) {
-       alert("Please fill in your name and phone number first.");
+    if (!formData.name || !formData.phone || !formData.email) {
+       alert("Please fill in your name, email, and phone number first.");
        return;
     }
     
@@ -63,6 +64,7 @@ const CustomOrderPage = () => {
       id: Date.now().toString(),
       date: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }),
       customer: formData.name,
+      email: formData.email,
       phone: formData.phone,
       item: `Custom: ${formData.size}`,
       amount: 1000,
@@ -81,34 +83,7 @@ const CustomOrderPage = () => {
     }
   };
 
-  const handleWhatsAppSubmit = async (e) => {
-    e.preventDefault();
-    
-    const newOrder = {
-      id: Date.now().toString(),
-      date: new Date().toLocaleDateString(),
-      customer: formData.name,
-      phone: formData.phone,
-      item: `Custom: ${formData.size}`,
-      amount: 0,
-      status: "Pending",
-      type: "Custom Request",
-      user_id: user ? user.id : null
-    };
-    
-    try {
-      await addOrder(newOrder);
-      
-      const phone = "919000000000"; 
-      const text = `Hello Lumé! I would like a custom bouquet.\n\nName: ${formData.name}\nOccasion: ${formData.occasion}\nColors: ${formData.colors}\nSize: ${formData.size}\nMessage: ${formData.message}`;
 
-      const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-      window.open(url, '_blank');
-    } catch (error) {
-      console.error("Failed to save custom order", error);
-      alert("There was an issue saving your request. Please try again.");
-    }
-  };
 
   return (
     <div className="page-wrapper custom-order-page">
@@ -148,6 +123,13 @@ const CustomOrderPage = () => {
                    <label htmlFor="name">Full Name</label>
                    <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required placeholder="Jane Doe"/>
                  </div>
+                 <div className="form-group">
+                   <label htmlFor="email">Email Address</label>
+                   <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required placeholder="jane@example.com"/>
+                 </div>
+               </div>
+
+               <div className="form-row">
                  <div className="form-group">
                    <label htmlFor="phone">WhatsApp Number</label>
                    <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} required placeholder="+91 98765 43210"/>

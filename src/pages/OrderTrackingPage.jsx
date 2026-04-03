@@ -1,23 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Search, Package, CheckCircle, Truck, Clock, AlertCircle } from 'lucide-react';
 import { getOrderByTrackId } from '../services/api';
 
 const OrderTrackingPage = () => {
+  const location = useLocation();
   const [trackId, setTrackId] = useState('');
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleTrackSubmit = async (e) => {
-    e.preventDefault();
-    if (!trackId.trim()) return;
-    
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const idParam = params.get('id');
+    if (idParam) {
+      setTrackId(idParam);
+      performSearch(idParam);
+    }
+  }, [location.search]);
+
+  const performSearch = async (searchId) => {
+    if (!searchId.trim()) return;
     setLoading(true);
     setError('');
     setOrder(null);
     
     try {
-      const foundOrder = await getOrderByTrackId(trackId.trim());
+      const foundOrder = await getOrderByTrackId(searchId.trim());
       if (foundOrder) {
         setOrder(foundOrder);
       } else {
@@ -28,6 +37,11 @@ const OrderTrackingPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTrackSubmit = (e) => {
+    e.preventDefault();
+    performSearch(trackId);
   };
 
   const getStatusIndex = (status) => {

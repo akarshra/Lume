@@ -81,6 +81,7 @@ const Gallery = ({ limit }) => {
       id: Date.now().toString(),
       date: new Date().toLocaleDateString(),
       customer: customerDetails.name,
+      email: customerDetails.email,
       phone: customerDetails.phone,
       address: customerDetails.address || "",
       paymentMethod: customerDetails.paymentMethod || "cod",

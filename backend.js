@@ -1,19 +1,29 @@
+/* global process */
 import express from 'express';
 import cors from 'cors';
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { createClient } from '@supabase/supabase-js';
 
 // Load the .env.local variables like VITE_SUPABASE_URL and STRIPE_SECRET_KEY
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__dirname, '.env.local') });
 
+import { Resend } from 'resend';
+const resend = new Resend(process.env.RESEND_API_KEY || 're_fallback');
+
 const app = express();
 const port = 5001;
 
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrlStr = supabaseUrl || 'https://fallback.supabase.co';
+const supabaseKeyStr = supabaseKey || 'fallback_key';
+const supabase = createClient(supabaseUrlStr, supabaseKeyStr);
+
 app.use(cors());
-app.use(express.json());
 
 // Initialize Stripe Secret Key
 const stripeKey = process.env.STRIPE_SECRET_KEY;
@@ -21,6 +31,37 @@ if (!stripeKey) {
   console.warn("WARNING: STRIPE_SECRET_KEY is missing from .env.local!");
 }
 const stripe = new Stripe(stripeKey || 'sk_test_fallback');
+
+// Stripe Webhook endpoint MUST use express.raw parser
+app.post('/api/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error(`Webhook Error: ${err.message}`);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the event
+  switch (event.type) {
+    case 'payment_intent.succeeded': {
+      const paymentIntent = event.data.object;
+      console.log(`✅ Webhook: PaymentIntent ${paymentIntent.id} succeeded for amount ${paymentIntent.amount}!`);
+      break;
+    }
+    default:
+      console.log(`Webhook: Unhandled event type ${event.type}`);
+  }
+
+  res.send();
+});
+
+// For all other routes, use JSON parser
+app.use(express.json());
 
 app.post('/api/create-payment-intent', async (req, res) => {
   try {
@@ -50,7 +91,71 @@ app.post('/api/create-payment-intent', async (req, res) => {
   }
 });
 
+app.post('/api/send-email', async (req, res) => {
+  try {
+    const { to, subject, html } = req.body;
+    
+    const { data, error } = await resend.emails.send({
+      from: 'Lumé Orders <onboarding@resend.dev>', // Default testing sender
+      to: [to],
+      subject: subject,
+      html: html,
+    });
+
+    if (error) {
+      return res.status(400).json({ error: error });
+    }
+
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error("Resend Error:", error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+app.post('/api/update-status', async (req, res) => {
+  try {
+    const { id, status, order } = req.body;
+    
+    // 1. Update DB securely from backend
+    const { data, error } = await supabase.from('orders').update({ status }).eq('id', id).select();
+    
+    if (error) {
+      return res.status(400).json({ error });
+    }
+
+    // 2. Track & Send Email
+    if (order && order.email) {
+      const msg = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+           <h2 style="color: #9b1b30;">Hello ${order.customer},</h2>
+           <p>We wanted to let you know that your Lumé order status has been updated!</p>
+           <div style="padding: 16px; background-color: #f8fafc; border-radius: 8px; margin: 20px 0;">
+             <p style="margin: 0; font-size: 1.2rem;"><strong>Order Status: <span style="color: #3b82f6;">${status}</span></strong></p>
+             <p style="margin: 8px 0 0; color: #64748b;">Item: ${order.item}</p>
+           </div>
+           <p>If you have any questions, feel free to reply to this email or reach out to us on Instagram.</p>
+           <br/>
+           <p>Best,<br/><strong>The Lumé Artisans</strong></p>
+        </div>
+      `;
+
+      await resend.emails.send({
+        from: 'Lumé Orders <onboarding@resend.dev>',
+        to: [order.email],
+        subject: `Artisan Update: Your Lumé order is now ${status}`,
+        html: msg,
+      });
+    }
+
+    res.json({ success: true, data: data ? data[0] : null });
+  } catch (error) {
+    console.error("Update Status Error:", error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
 app.listen(port, () => {
-  console.log(`✅ Secure Payment Server running locally on http://localhost:${port}`);
+  console.log(`✅ Secure Data & Payment Server running locally on http://localhost:${port}`);
   console.log(`Ready to process Stripe Payments!`);
 });

@@ -5,11 +5,13 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import StripeCheckoutForm from './StripeCheckoutForm';
 
+
 const stripePromise = loadStripe('pk_test_51T4bcOLkWChg5JeJdTPGkNttxonAEO6SuRYpKMuxggvRKXRXRCbaxwgp9wBwwy7anqdJrck1wPNXmXE9vekGtZk700Ob1bx4pL');
 
 const OrderModal = ({ isOpen, onClose, product, onConfirm, platform, isCustomRequest }) => {
   const [formData, setFormData] = useState({ 
     name: '', 
+    email: '',
     phone: '',
     address: '',
     paymentMethod: 'cod'
@@ -28,7 +30,7 @@ const OrderModal = ({ isOpen, onClose, product, onConfirm, platform, isCustomReq
 
   const handleInitialFormSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone) return;
+    if (!formData.name || !formData.phone || !formData.email) return;
     if (platform === 'direct' && !formData.address) return;
     
     if (formData.paymentMethod === 'stripe') {
@@ -41,9 +43,11 @@ const OrderModal = ({ isOpen, onClose, product, onConfirm, platform, isCustomReq
           body: JSON.stringify({ items: [{ name: product.name, price: product.price }], isCustom: isCustomRequest }),
         });
         const data = await response.json();
-        if (data.error) {
-           setApiError(data.error);
-        } else {
+        if (!response.ok) {
+           throw new Error(data.error?.message || "Failed to create payment intent");
+        } else if (data.error) {
+           setApiError(data.error.message || data.error);
+        } else if (data.clientSecret) {
            setClientSecret(data.clientSecret);
         }
       } catch {
@@ -100,6 +104,18 @@ const OrderModal = ({ isOpen, onClose, product, onConfirm, platform, isCustomReq
                   onChange={handleChange} 
                   required 
                   placeholder="e.g. Jane Doe"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="email">Email Address</label>
+                <input 
+                  type="email" 
+                  id="email" 
+                  name="email" 
+                  value={formData.email} 
+                  onChange={handleChange} 
+                  required 
+                  placeholder="e.g. jane@example.com"
                 />
               </div>
               <div className="form-group">
