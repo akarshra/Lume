@@ -10,6 +10,7 @@ import { addOrder, getPromos } from '../services/api';
 import './CheckoutPage.css';
 
 const stripePromise = loadStripe('pk_test_51T4bcOLkWChg5JeJdTPGkNttxonAEO6SuRYpKMuxggvRKXRXRCbaxwgp9wBwwy7anqdJrck1wPNXmXE9vekGtZk700Ob1bx4pL');
+const paymentApiBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
 const CheckoutPage = () => {
   const { cartItems, getCartTotal } = useCart();
@@ -119,10 +120,19 @@ const CheckoutPage = () => {
       setIsLoadingSecret(true);
       setApiError(null);
       try {
-        const response = await fetch('/api/create-payment-intent', {
+        const response = await fetch(`${paymentApiBase}/api/create-payment-intent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: [{ name: "Cart Order", price: totalAmountStr }], isCustom: false }),
+          body: JSON.stringify({
+            items: [{ name: "Cart Order", price: totalAmountStr }],
+            isCustom: false,
+            metadata: {
+              source: 'checkout',
+              customerName: formData.name,
+              phone: formData.phone,
+              userId: user?.id || '',
+            },
+          }),
         });
         const data = await response.json();
         
