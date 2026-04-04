@@ -140,7 +140,7 @@ const CheckoutPage = () => {
         }
       } catch (err) {
         console.error("Payment Error:", err);
-        setApiError("Could not reach secure payment server. Please ensure the local backend server is running.");
+        setApiError(err.message && err.message.includes("Invalid API Key") ? "Stripe payment is temporarily unavailable. Please use Cash on Delivery instead." : "Could not connect to payment server. Please try Cash on Delivery or contact support.");
       } finally {
         setIsLoadingSecret(false);
       }

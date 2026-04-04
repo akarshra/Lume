@@ -27,10 +27,11 @@ app.use(cors());
 
 // Initialize Stripe Secret Key
 const stripeKey = process.env.STRIPE_SECRET_KEY;
-if (!stripeKey) {
-  console.warn("WARNING: STRIPE_SECRET_KEY is missing from .env.local!");
+const stripeKeyValid = stripeKey && (stripeKey.startsWith('sk_test_') || stripeKey.startsWith('sk_live_'));
+if (!stripeKeyValid) {
+  console.warn("WARNING: STRIPE_SECRET_KEY is missing or invalid. Online payments will be disabled.");
 }
-const stripe = new Stripe(stripeKey || 'sk_test_fallback');
+const stripe = stripeKeyValid ? new Stripe(stripeKey) : null;
 
 // Stripe Webhook endpoint MUST use express.raw parser
 app.post('/api/webhook', express.raw({ type: 'application/json' }), (req, res) => {
@@ -64,6 +65,9 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), (req, res) =
 app.use(express.json());
 
 app.post('/api/create-payment-intent', async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: { message: 'Online payment is not configured. Please use Cash on Delivery.' } });
+  }
   try {
     const { items, isCustom } = req.body;
     

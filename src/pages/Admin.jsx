@@ -22,12 +22,9 @@ const Admin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // DEV BYPASS: Commented out redirect 
-    /*
     if (user && user.email !== ADMIN_EMAIL) {
       navigate('/', { replace: true });
     }
-    */
   }, [user, navigate]);
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -311,16 +308,15 @@ const Admin = () => {
 
   const lowStockItems = inventory.filter(i => !i.inStock || Number(i.stock) < 5);
 
-  // DEV BYPASS: Commenting out the rigid login lock screen so you can immediately see the Admin Panel locally
-  /*
+  
   if (!user) {
     return (
       <div className="admin-login-screen">
-        <div className="login-card glass-panel" style={{textAlign: 'center', padding: '3rem'}}>
-          <Lock size={48} className="lock-icon" style={{margin: '0 auto 1rem'}} />
-          <h2>Admin Restricted</h2>
-          <p style={{marginBottom: '2rem'}}>Please log in from the Account page to access the admin dashboard.</p>
-          <a href="/account" className="btn-primary" style={{display: 'inline-block', textDecoration: 'none'}}>Go to Login</a>
+        <div className="login-card glass-panel" style={{textAlign:'center',padding:'3rem'}}>
+          <Lock size={52} style={{margin:'0 auto 1.5rem',display:'block',color:'var(--accent-gold)'}} />
+          <h2 style={{marginBottom:'12px'}}>Admin Access Required</h2>
+          <p style={{color:'var(--text-muted)',marginBottom:'2rem',lineHeight:'1.6'}}>This area is restricted to the store owner only. Please sign in with your admin account.</p>
+          <a href="/account" className="btn-primary" style={{display:'inline-flex',textDecoration:'none'}}>Sign In to Continue</a>
         </div>
       </div>
     );
@@ -328,15 +324,14 @@ const Admin = () => {
 
   if (user.email !== ADMIN_EMAIL) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
-        <Lock size={48} color="#9b1b30" />
-        <h2 style={{ color: '#9b1b30' }}>Access Restricted</h2>
-        <p style={{ color: '#64748b' }}>You do not have permission to view this page.</p>
-        <a href="/" className="btn-secondary">Go Home</a>
+      <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:'20px',background:'var(--surface-color)',padding:'80px 24px',textAlign:'center'}}>
+        <div style={{width:'80px',height:'80px',background:'#fef2f2',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto'}}><Lock size={36} color="#ef4444" /></div>
+        <h2 style={{color:'var(--text-main)'}}>Access Denied</h2>
+        <p style={{color:'var(--text-muted)',maxWidth:'380px',lineHeight:'1.7'}}>You are signed in as <strong>{user.email}</strong>. This panel is for the store owner only.</p>
+        <div style={{display:'flex',gap:'12px',flexWrap:'wrap',justifyContent:'center'}}><a href="/" className="btn-primary">Go Home</a><a href="/account" className="btn-secondary">Sign Out</a></div>
       </div>
     );
   }
-  */
 
   return (
     <div className="admin-layout">
