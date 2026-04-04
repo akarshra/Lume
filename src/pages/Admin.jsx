@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
-  LayoutDashboard, ShoppingBag, Database, Tag, TrendingUp, Users, 
+  LayoutDashboard, ShoppingBag, Database, Tag, TrendingUp, Users,
+  ChevronDown, MapPin, ExternalLink, 
   Plus, Trash2, Send, Lock, Download, Search, X, AlertTriangle, ArrowUpRight, Gift 
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
@@ -42,6 +43,7 @@ const Admin = () => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [newPromo, setNewPromo] = useState({ code: '', discount: '', usage: '0' });
   const [isPromoModalOpen, setIsPromoModalOpen] = useState(false);
+  const [expandedCustomer, setExpandedCustomer] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -544,33 +546,59 @@ const Admin = () => {
             </div>
           )}
 
-          {activeTab === 'customers' && (
-            <div className="admin-section fade-in">
-              <div className="section-header"><h2>Customer Overview</h2><span style={{color:"var(--text-muted)",fontSize:"0.9rem"}}>{[...new Set(orders.map(o=>o.email).filter(Boolean))].length} unique customers</span></div>
-              <div className="content-card">
-                <table className="admin-table">
-                  <thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Last Order</th></tr></thead>
-                  <tbody>
-                    {Object.values(orders.reduce((acc,o)=>{
-                      const key=o.email||o.customer;
-                      if(!acc[key])acc[key]={name:o.customer,email:o.email,phone:o.phone,count:0,total:0,last:o.date};
-                      acc[key].count++;acc[key].total+=Number(o.amount)||0;
-                      return acc;
-                    },{})).sort((a,b)=>b.total-a.total).map((cust,i)=>(
-                      <tr key={i}>
-                        <td><strong>{cust.name}</strong></td>
-                        <td><small>{cust.email||"No email"}</small></td>
-                        <td><small>{cust.phone||"—"}</small></td>
-                        <td><span className="status-pill crafting">{cust.count} order{cust.count!==1?"s":""}</span></td>
-                        <td><strong style={{color:"#10b981"}}>₹{cust.total.toLocaleString("en-IN")}</strong></td>
-                        <td><small style={{color:"var(--text-muted)"}}>{cust.last}</small></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          {activeTab === 'customers' && (() => {
+  const gi=(s)=>{const t=(s||'').toLowerCase();return t.includes('delivered')?3:t.includes('transit')?2:t.includes('crafting')?1:0;};
+  const S=['Confirmed','Crafting','In Transit','Delivered'];
+  const cl=Object.values(orders.reduce((a,o)=>{const k=o.email||o.customer||'?';if(!a[k])a[k]={name:o.customer,email:o.email,phone:o.phone,n:0,t:0,os:[]};a[k].n++;a[k].t+=Number(o.amount)||0;a[k].os.push(o);return a;},{})).sort((a,b)=>b.t-a.t);
+  return (
+    <div className="admin-section fade-in">
+      <div className="section-header">
+        <div><h2>Customers & Order Tracking</h2><small style={{color:'var(--text-muted)',fontWeight:'400'}}>Click a customer to track all their orders live</small></div>
+        <span style={{background:'#eff6ff',color:'#1d4ed8',padding:'4px 14px',borderRadius:'20px',fontSize:'0.85rem',fontWeight:'600'}}>{cl.length} customers</span>
+      </div>
+      {cl.length===0&&<div className="content-card" style={{padding:'48px',textAlign:'center',color:'var(--text-muted)'}}>No customers yet.</div>}
+      {cl.map((cust,ci)=>(
+        <div key={ci} className="customer-track-card">
+          <div className="cust-card-header" onClick={()=>setExpandedCustomer(expandedCustomer===(cust.email||cust.name)?null:(cust.email||cust.name))}>
+            <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
+              <div className="cust-avatar">{(cust.name||'?')[0].toUpperCase()}</div>
+              <div><strong style={{display:'block',fontSize:'1rem'}}>{cust.name||cust.email}</strong><small style={{color:'var(--text-muted)'}}>{cust.email||'No email'}{cust.phone?' • '+cust.phone:''}</small></div>
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:'12px',flexShrink:0}}>
+              <span className="status-pill crafting">{cust.n} order{cust.n!==1?'s':''}</span>
+              <strong style={{color:'#10b981'}}>₹{cust.t.toLocaleString('en-IN')}</strong>
+              <ChevronDown size={18} style={{color:'var(--text-muted)',transition:'0.2s',transform:expandedCustomer===(cust.email||cust.name)?'rotate(180deg)':'none'}}/>
+            </div>
+          </div>
+          {expandedCustomer===(cust.email||cust.name)&&(
+            <div className="cust-orders-expanded">
+              <p className="expanded-hint"><ExternalLink size={12}/> {cust.n} order{cust.n!==1?'s':''} found — click "Full Track" to open the live map tracker</p>
+              {cust.os.map((o,j)=>(
+                <div key={j} className="ord-track-item">
+                  <div className="ord-track-meta">
+                    <div style={{flex:1}}>
+                      <strong style={{fontSize:'0.95rem'}}>{o.item}</strong>
+                      <p style={{margin:'3px 0 2px',fontSize:'0.78rem',color:'var(--text-muted)'}}>ID: #{o.id?o.id.slice(-8).toUpperCase():'N/A'} &bull; {o.date} &bull; ₹{Number(o.amount||0).toLocaleString('en-IN')}</p>
+                      {o.address&&<p style={{margin:0,fontSize:'0.75rem',color:'var(--text-muted)',display:'flex',alignItems:'center',gap:'4px'}}><MapPin size={11} color="#C62828"/> {o.address}</p>}
+                    </div>
+                    <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:'6px',flexShrink:0}}>
+                      <span className={'status-pill '+(o.status||'pending').toLowerCase().replace(' ','-')}>{o.status||'Pending'}</span>
+                      <strong style={{color:'var(--primary-dark)',fontSize:'0.9rem'}}>₹{Number(o.amount||0).toLocaleString('en-IN')}</strong>
+                      <a href={'/track?id='+o.id} target="_blank" rel="noreferrer" className="track-ext-link" onClick={e=>e.stopPropagation()}><ExternalLink size={12}/> Full Track + Map</a>
+                    </div>
+                  </div>
+                  <div className="mini-track-timeline">
+                    {S.map((label,si)=>{const idx=gi(o.status);return(<div key={si} className={'mini-step'+(si<idx?' done':'')+(si===idx?' active':'')}><div className="mini-dot">{si<idx?'✓':si+1}</div>{si<3&&<div className="mini-connector"/>}<span className="mini-label">{label}</span></div>);})}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
+        </div>
+      ))}
+    </div>
+  );
+})()}
         </div>
       </main>
 
