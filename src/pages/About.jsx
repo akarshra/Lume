@@ -1,15 +1,3 @@
 import Story from '../components/Story';
-
-const About = () => {
-  return (
-    <div className="page-enter-active" style={{ paddingTop: '80px', minHeight: '100vh' }}>
-      <div className="container text-center" style={{ padding: '60px 24px 20px' }}>
-        <h1 className="title-primary reveal-up">Our Heritage</h1>
-        <p className="subtitle reveal-up" style={{ animationDelay: '0.2s' }}>The passion behind every petal.</p>
-      </div>
-      <Story />
-    </div>
-  );
-};
-
-export default About;
+import{Sparkles,Heart,Award}from 'lucide-react';
+export default function About(){return(<div className='page-enter-active' style={{paddingTop:'80px',minHeight:'100vh'}}><div className='container text-center' style={{padding:'80px 24px 20px'}}><div className='artisan-badge'><Sparkles size={14}/> Our Heritage</div><h1 className='title-primary reveal-up'>The Lumé Story</h1><p className='subtitle reveal-up' style={{maxWidth:'540px',margin:'0 auto',animationDelay:'0.2s'}}>Born from a passion for timeless beauty — every ribbon rose tells a story of patience, precision, and everlasting love.</p></div><Story/><section className='section' style={{background:'var(--surface-color)'}}><div className='container'><div className='text-center' style={{marginBottom:'48px'}}><h2 className='title-secondary reveal-up'>Our Values</h2></div><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:'24px'}}><div className='content-card reveal-up' style={{textAlign:'center',padding:'40px 28px'}}><div style={{width:'56px',height:'56px',background:'var(--primary)',borderRadius:'14px',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 20px',color:'var(--accent-gold)'}}><Heart size={24}/></div><h3 style={{marginBottom:'12px'}}>Handcrafted with Love</h3><p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.7'}}>Every rose is folded by hand — never machine-made. We believe in the beauty of imperfection.</p></div><div className='content-card reveal-up' style={{textAlign:'center',padding:'40px 28px',animationDelay:'0.2s'}}><div style={{width:'56px',height:'56px',background:'var(--primary)',borderRadius:'14px',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 20px',color:'var(--accent-gold)'}}><Award size={24}/></div><h3 style={{marginBottom:'12px'}}>Premium Materials Only</h3><p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.7'}}>We source only the finest satin and silk ribbons to ensure every bouquet feels as luxurious as it looks.</p></div><div className='content-card reveal-up' style={{textAlign:'center',padding:'40px 28px',animationDelay:'0.4s'}}><div style={{width:'56px',height:'56px',background:'var(--primary)',borderRadius:'14px',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 20px',color:'var(--accent-gold)'}}><Sparkles size={24}/></div><h3 style={{marginBottom:'12px'}}>Everlasting Beauty</h3><p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.7'}}>Unlike fresh flowers, our ribbon roses never wilt. They are keepsakes meant to be cherished for a lifetime.</p></div></div></div></section></div>);}

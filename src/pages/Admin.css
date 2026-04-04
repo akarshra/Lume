@@ -252,3 +252,6 @@
     width: 100%;
   }
 }
+.admin-scroll-content{flex:1;overflow-y:auto;padding-bottom:40px;}
+.admin-section{padding:0 32px 32px;}
+@media(max-width:768px){.admin-section{padding:0 16px 24px;}.stats-grid{grid-template-columns:1fr 1fr;padding:20px 0;}}

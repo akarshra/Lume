@@ -1,15 +1,2 @@
-import { Link } from 'react-router-dom';
-
-const NotFoundPage = () => (
-  <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', background: 'var(--bg-color)', paddingTop: '80px' }}>
-    <div style={{ fontSize: '6rem', fontWeight: '900', color: 'var(--primary-dark)', fontFamily: 'var(--font-heading)', lineHeight: 1 }}>404</div>
-    <h2 style={{ fontSize: '1.5rem', color: '#334155' }}>This page doesn't exist</h2>
-    <p style={{ color: '#64748b', maxWidth: '400px', textAlign: 'center' }}>The bouquet you're looking for may have been moved or never existed. Let's get you back.</p>
-    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
-      <Link to='/' className='btn-primary'>Go Home</Link>
-      <Link to='/gallery' className='btn-secondary'>Browse Collection</Link>
-    </div>
-  </div>
-);
-
-export default NotFoundPage;
+import{Link}from 'react-router-dom';
+export default function NotFoundPage(){return(<div style={{minHeight:'100vh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'20px',background:'var(--bg-color)',padding:'80px 24px',textAlign:'center'}}><div style={{fontSize:'clamp(5rem,15vw,8rem)',fontWeight:'900',color:'var(--primary)',fontFamily:'var(--font-heading)',lineHeight:1,WebkitTextStroke:'2px var(--accent-gold)'}}>404</div><h2 style={{fontSize:'clamp(1.3rem,3vw,1.8rem)',color:'var(--text-main)'}}>Page Not Found</h2><p style={{color:'var(--text-muted)',maxWidth:'420px',lineHeight:'1.7'}}>The bouquet you are looking for may have moved or never existed. Let us get you back to somewhere beautiful.</p><div style={{display:'flex',gap:'12px',flexWrap:'wrap',justifyContent:'center'}}><Link to='/' className='btn-primary'>Go Home</Link><Link to='/gallery' className='btn-secondary'>Browse Collection</Link></div></div>);}

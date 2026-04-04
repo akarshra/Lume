@@ -1,15 +1,3 @@
 import Gallery from '../components/Gallery';
-
-const GalleryPage = () => {
-  return (
-    <div className="page-enter-active" style={{ paddingTop: '80px', minHeight: '100vh' }}>
-      <div className="container text-center" style={{ padding: '60px 24px 20px' }}>
-        <h1 className="title-primary reveal-up">The Collection</h1>
-        <p className="subtitle reveal-up" style={{ animationDelay: '0.2s' }}>Explore our handcrafted ribbon masterpieces.</p>
-      </div>
-      <Gallery />
-    </div>
-  );
-};
-
-export default GalleryPage;
+import{Filter}from 'lucide-react';
+export default function GalleryPage(){return(<div className='page-enter-active' style={{paddingTop:'80px',minHeight:'100vh'}}><div className='container text-center' style={{padding:'80px 24px 20px'}}><div className='artisan-badge'><Filter size={14}/> Our Collection</div><h1 className='title-primary reveal-up'>The Bouquet Gallery</h1><p className='subtitle reveal-up' style={{maxWidth:'520px',margin:'0 auto',animationDelay:'0.2s'}}>Each arrangement is handcrafted with premium satin ribbons, folded petal by petal in our Kishanganj studio.</p></div><Gallery/></div>);}
