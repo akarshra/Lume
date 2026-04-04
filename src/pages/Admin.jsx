@@ -31,6 +31,7 @@ const Admin = () => {
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [newOrdersCount] = useState(() => { try { const last = parseInt(localStorage.getItem('lume_last_order_count')||0); const diff = Math.max(0, orders.length - last); return diff; } catch { return 0; } });
 
   // --- STATE MANAGEMENT ---
   const [orders, setOrders] = useState([]);
@@ -234,6 +235,17 @@ const Admin = () => {
     }
   };
 
+
+  const exportOrdersCSV = () => {
+    const headers = ["ID","Customer","Email","Phone","Item","Amount","Status","Date","Payment","Address"];
+    const rows = orders.map(o => [o.id,o.customer,o.email,o.phone,o.item,o.amount,o.status,o.date,o.paymentMethod,o.address].map(v=>String(v||'').replace(/,/g,';')));
+    const csv = [headers,...rows].map(r=>r.join(',')).join('\n');
+    const blob = new Blob([csv],{type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url;a.download='lume-orders.csv';a.click();
+    URL.revokeObjectURL(url);
+  };
   const deleteProductObj = async (id) => {
     try {
       await deleteProduct(id);
@@ -349,6 +361,7 @@ const Admin = () => {
           </button>
           <button className={activeTab === 'bouquets' ? 'active' : ''} onClick={() => setActiveTab('bouquets')}><Gift size={20}/> Bouquets</button>
           <button className={activeTab === 'promos' ? 'active' : ''} onClick={() => setActiveTab('promos')}><Tag size={20}/> Marketing</button>
+          <button className={activeTab === 'customers' ? 'active' : ''} onClick={() => setActiveTab('customers')}><Users size={20}/> Customers</button>
         </nav>
       </aside>
 
@@ -421,6 +434,7 @@ const Admin = () => {
               <div className="section-header">
                 <h2>Order Management</h2>
                 <button className="btn-outline-danger" onClick={clearAllOrders}><Trash2 size={16}/> Clear History</button>
+                <button className="btn-secondary" onClick={exportOrdersCSV} style={{display:"flex",alignItems:"center",gap:"6px"}}><Download size={16}/> Export CSV</button>
               </div>
               <div className="content-card">
                 <table className="admin-table">
@@ -528,6 +542,34 @@ const Admin = () => {
                     <div className="promo-meta"><span>{p.discount} Off</span> <span>{p.usage} Uses</span></div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'customers' && (
+            <div className="admin-section fade-in">
+              <div className="section-header"><h2>Customer Overview</h2><span style={{color:"var(--text-muted)",fontSize:"0.9rem"}}>{[...new Set(orders.map(o=>o.email).filter(Boolean))].length} unique customers</span></div>
+              <div className="content-card">
+                <table className="admin-table">
+                  <thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Last Order</th></tr></thead>
+                  <tbody>
+                    {Object.values(orders.reduce((acc,o)=>{
+                      const key=o.email||o.customer;
+                      if(!acc[key])acc[key]={name:o.customer,email:o.email,phone:o.phone,count:0,total:0,last:o.date};
+                      acc[key].count++;acc[key].total+=Number(o.amount)||0;
+                      return acc;
+                    },{})).sort((a,b)=>b.total-a.total).map((cust,i)=>(
+                      <tr key={i}>
+                        <td><strong>{cust.name}</strong></td>
+                        <td><small>{cust.email||"No email"}</small></td>
+                        <td><small>{cust.phone||"—"}</small></td>
+                        <td><span className="status-pill crafting">{cust.count} order{cust.count!==1?"s":""}</span></td>
+                        <td><strong style={{color:"#10b981"}}>₹{cust.total.toLocaleString("en-IN")}</strong></td>
+                        <td><small style={{color:"var(--text-muted)"}}>{cust.last}</small></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

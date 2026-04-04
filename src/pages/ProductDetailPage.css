@@ -1,0 +1,21 @@
+.product-detail-page{padding-bottom:80px;}
+.product-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;margin-bottom:60px;}
+.product-detail-image-wrap{position:sticky;top:100px;}
+.product-detail-img{width:100%;border-radius:20px;object-fit:cover;box-shadow:0 20px 60px rgba(0,0,0,0.12);}
+.image-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+.badge-item{background:var(--surface-color);color:var(--text-muted);font-size:0.8rem;padding:6px 14px;border-radius:20px;}
+.product-detail-title{font-family:var(--font-heading);font-size:2.2rem;line-height:1.2;margin:8px 0 12px;}
+.product-color{color:var(--text-muted);font-size:0.9rem;margin-bottom:12px;}
+.product-detail-stars{display:flex;align-items:center;margin-bottom:16px;}
+.product-detail-price{font-size:2rem;font-weight:800;color:var(--primary-dark);margin-bottom:8px;}
+.price-breakdown{font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;}
+.product-detail-desc{color:var(--text-muted);line-height:1.8;font-size:1rem;margin-bottom:24px;}
+.detail-perks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px;}
+.perk-item{display:flex;align-items:center;gap:8px;font-size:0.9rem;color:var(--text-main);}
+.detail-actions{display:flex;gap:12px;align-items:center;}
+.btn-wishlist,.btn-share{width:48px;height:48px;border-radius:12px;border:1.5px solid #e2e8f0;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
+.btn-wishlist:hover,.btn-share:hover{border-color:var(--primary-dark);}
+.btn-wishlist.active{background:#fff0f0;border-color:#C62828;}
+.spinner{width:40px;height:40px;border:3px solid #f3f3f3;border-top:3px solid var(--primary-dark);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto;}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:900px){.product-detail-grid{grid-template-columns:1fr;}.product-detail-image-wrap{position:static;}.detail-perks{grid-template-columns:1fr;}.product-detail-title{font-size:1.6rem;}}

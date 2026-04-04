@@ -117,6 +117,15 @@ app.post('/api/send-email', async (req, res) => {
   }
 });
 
+app.post("/api/contact-email", async (req, res) => {
+  try {
+    const { name, email, message } = req.body;
+    const { data, error } = await resend.emails.send({ from: "Lume Store <onboarding@resend.dev>", to: ["akarshsrivastava322@gmail.com"], subject: "New Contact from " + name, html: "<h2>New Inquiry from " + name + "</h2><p>Email: " + email + "</p><p>Message: " + message + "</p>" });
+    if (error) return res.status(400).json({ error });
+    res.json({ success: true });
+  } catch (error) { res.status(500).json({ error: { message: error.message } }); }
+});
+
 app.post('/api/update-status', async (req, res) => {
   try {
     const { id, status, order } = req.body;

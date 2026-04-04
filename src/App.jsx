@@ -1,27 +1,28 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import Home from './pages/Home';
-import About from './pages/About';
-import GalleryPage from './pages/GalleryPage';
-import CustomOrderPage from './pages/CustomOrderPage';
-import TestimonialsPage from './pages/TestimonialsPage';
-import ContactPage from './pages/ContactPage';
-import Admin from './pages/Admin';
-import CartPage from './pages/CartPage';
-import CheckoutPage from './pages/CheckoutPage';
-import SuccessPage from './pages/SuccessPage';
-import Navigation from './components/Navigation';
-import Footer from './components/Footer';
-import AccountPage from './pages/AccountPage';
-import OrderTrackingPage from './pages/OrderTrackingPage';
-import NotFoundPage from './pages/NotFoundPage';
-import { CartProvider } from './context/CartContext';
-import { AuthProvider } from './context/AuthContext';
-import './App.css';
-
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import GalleryPage from "./pages/GalleryPage";
+import CustomOrderPage from "./pages/CustomOrderPage";
+import TestimonialsPage from "./pages/TestimonialsPage";
+import ContactPage from "./pages/ContactPage";
+import Admin from "./pages/Admin";
+import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import SuccessPage from "./pages/SuccessPage";
+import Navigation from "./components/Navigation";
+import Footer from "./components/Footer";
+import AccountPage from "./pages/AccountPage";
+import OrderTrackingPage from "./pages/OrderTrackingPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import WishlistPage from "./pages/WishlistPage";
+import WeddingPage from "./pages/WeddingPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import { CartProvider } from "./context/CartContext";
+import { AuthProvider } from "./context/AuthContext";
+import "./App.css";
 function MainLayout() {
   const location = useLocation();
-  const isAdmin = location.pathname.startsWith('/admin');
-
+  const isAdmin = location.pathname.startsWith("/admin");
   return (
     <div className="App">
       <Navigation />
@@ -39,6 +40,9 @@ function MainLayout() {
           <Route path="/success" element={<SuccessPage />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/track" element={<OrderTrackingPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/wedding" element={<WeddingPage />} />
+          <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
@@ -46,7 +50,6 @@ function MainLayout() {
     </div>
   );
 }
-
 function App() {
   return (
     <AuthProvider>
@@ -58,5 +61,4 @@ function App() {
     </AuthProvider>
   );
 }
-
 export default App;

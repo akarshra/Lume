@@ -204,3 +204,10 @@ export const addReview = async (reviewInput) => {
   }
   return data[0];
 };
+
+// --- All Reviews (for testimonials) ---
+export const getAllReviews = async () => {
+  const { data, error } = await supabase.from('reviews').select('*').order('created_at', { ascending: false }).limit(20);
+  if (error) { console.warn('getAllReviews error:', error); return []; }
+  return data;
+};
