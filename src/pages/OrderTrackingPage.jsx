@@ -133,7 +133,7 @@ export default function OrderTrackingPage() {
                 const isActive = step.index === statusIdx;
                 return (
                   <div key={step.index} className={"timeline-step" + (isDone ? " done" : "") + (isActive ? " active" : "")}>
-                    <div className="step-connector">
+                    <div className="step-left">
                       <div className="step-icon-wrap"><step.Icon size={20} /></div>
                       {step.index < 4 && <div className="step-line" />}
                     </div>
