@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { 
-  LayoutDashboard, ShoppingBag, Database, Tag, TrendingUp, Users,
+import {
+  LayoutDashboard, ShoppingBag, Database, Tag, TrendingUp, Users, Mail,
   ChevronDown, MapPin, ExternalLink, 
   Plus, Trash2, Send, Lock, Download, Search, X, AlertTriangle, ArrowUpRight, Gift 
 } from 'lucide-react';
@@ -44,6 +44,7 @@ const Admin = () => {
   const [newPromo, setNewPromo] = useState({ code: '', discount: '', usage: '0' });
   const [isPromoModalOpen, setIsPromoModalOpen] = useState(false);
   const [expandedCustomer, setExpandedCustomer] = useState(null);
+  const [contacts, setContacts] = useState([]);
   const [toast, setToast] = useState(null);
   const showToast = (msg, type) => { const t = type || 'success'; setToast({ msg, t }); setTimeout(() => setToast(null), 4000); };
 
@@ -53,6 +54,7 @@ const Admin = () => {
       fetchInventory();
       fetchPromos();
       fetchProducts();
+      supabase.from('contacts').select('*').order('created_at',{ascending:false}).then(({data})=>setContacts(data||[]));
     }
   }, [user]);
 
@@ -364,6 +366,7 @@ const Admin = () => {
           <button className={activeTab === 'bouquets' ? 'active' : ''} onClick={() => setActiveTab('bouquets')}><Gift size={20}/> Bouquets</button>
           <button className={activeTab === 'promos' ? 'active' : ''} onClick={() => setActiveTab('promos')}><Tag size={20}/> Marketing</button>
           <button className={activeTab === 'customers' ? 'active' : ''} onClick={() => setActiveTab('customers')}><Users size={20}/> Customers</button>
+          <button className={activeTab === 'inquiries' ? 'active' : ''} onClick={() => setActiveTab('inquiries')}><Mail size={20}/> Inquiries</button>
         </nav>
       </aside>
 
@@ -601,6 +604,22 @@ const Admin = () => {
     </div>
   );
 })()}
+
+
+          {activeTab === 'inquiries' && (
+            <div className="admin-section fade-in">
+              <div className="section-header"><h2>Wedding &amp; Contact Inquiries</h2><span style={{background:'#eff6ff',color:'#1d4ed8',padding:'4px 14px',borderRadius:'20px',fontSize:'0.85rem',fontWeight:'600'}}>{contacts.length} inquiries</span></div>
+              {contacts.length===0?(<div className="content-card" style={{padding:'48px',textAlign:'center',color:'var(--text-muted)'}}>No inquiries yet.</div>):(
+                <div className="content-card">
+                  <table className="admin-table">
+                    <thead><tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th></tr></thead>
+                    <tbody>{contacts.map((ct,i)=>(<tr key={i}><td><strong>{ct.name}</strong></td><td>{ct.email||'-'}</td><td style={{maxWidth:'320px',fontSize:'0.82rem',color:'var(--text-muted)'}}>{ct.message}</td><td style={{fontSize:'0.8rem',whiteSpace:'nowrap'}}>{ct.created_at?new Date(ct.created_at).toLocaleDateString('en-IN'):'-'}</td></tr>))}</tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
       {toast && (
         <div className="admin-toast" data-type={toast.t}>

@@ -69,7 +69,7 @@ const Navigation = () => {
       </div>
       {isOwner && (
         <div className="owner-topbar">
-          <Crown size={12} /> Owner Mode Active — <Link to="/admin" style={{ color: "inherit", fontWeight: "700", textDecoration: "underline" }}>Open Admin Panel</Link>
+          <Crown size={12} /> Owner Mode Active {' — '}<Link to="/admin" style={{ color: "inherit", fontWeight: "700", textDecoration: "underline" }}>Open Admin Panel</Link>
         </div>
       )}
       {isOpen && <div className="nav-overlay" onClick={() => setIsOpen(false)} />}
