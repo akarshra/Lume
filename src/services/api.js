@@ -30,7 +30,7 @@ export const getOrderByTrackId = async (trackId) => {
 };
 
 export const addOrder = async (orderData) => {
-  const { type: _type, platform: _platform, ...cleanOrderData } = orderData;
+  const { type: _type, platform: _platform, giftMessage: _gift, ...cleanOrderData } = orderData;
   const { data, error } = await supabase.from('orders').insert([cleanOrderData]).select();
   if (error) {
     console.error('API Error:', error);

@@ -22,7 +22,7 @@ const Admin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user && user.email !== ADMIN_EMAIL) {
+    if (user && user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
       navigate('/', { replace: true });
     }
   }, [user, navigate]);
@@ -31,8 +31,6 @@ const Admin = () => {
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [newOrdersCount] = useState(() => { try { const last = parseInt(localStorage.getItem('lume_last_order_count')||0); const diff = Math.max(0, orders.length - last); return diff; } catch { return 0; } });
-
   // --- STATE MANAGEMENT ---
   const [orders, setOrders] = useState([]);
   const [inventory, setInventory] = useState([]);
@@ -334,7 +332,7 @@ const Admin = () => {
     );
   }
 
-  if (user.email !== ADMIN_EMAIL) {
+  if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
     return (
       <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:'20px',background:'var(--surface-color)',padding:'80px 24px',textAlign:'center'}}>
         <div style={{width:'80px',height:'80px',background:'#fef2f2',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto'}}><Lock size={36} color="#ef4444" /></div>

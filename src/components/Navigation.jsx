@@ -32,7 +32,7 @@ const Navigation = () => {
           <Link to="/wedding" className={isActive("/wedding")}>Weddings</Link>
           <Link to="/testimonials" className={isActive("/testimonials")}>Love</Link>
           <Link to="/contact" className={isActive("/contact")}>Contact</Link>
-          <Link to="/admin" className="nav-admin">Admin</Link>
+          <Link to="/admin" className="nav-admin" style={{background:"var(--primary-dark)",color:"white",padding:"6px 14px",borderRadius:"6px",fontWeight:"700",fontSize:"0.85rem"}}>Admin</Link>
         </div>
         <div className="nav-actions">
           <button className="nav-icon-btn" onClick={() => navigate("/track")} title="Track My Order"><PackageSearch size={22} /></button>
