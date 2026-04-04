@@ -44,6 +44,8 @@ const Admin = () => {
   const [newPromo, setNewPromo] = useState({ code: '', discount: '', usage: '0' });
   const [isPromoModalOpen, setIsPromoModalOpen] = useState(false);
   const [expandedCustomer, setExpandedCustomer] = useState(null);
+  const [toast, setToast] = useState(null);
+  const showToast = (msg, type) => { const t = type || 'success'; setToast({ msg, t }); setTimeout(() => setToast(null), 4000); };
 
   useEffect(() => {
     if (user) {
@@ -92,7 +94,7 @@ const Admin = () => {
 
   const handleEmailNotify = async (order) => {
     if (!order.email) {
-      alert("No email provided for this customer.");
+      showToast('No email for this customer.', 'error');
       return;
     }
     try {
@@ -122,7 +124,7 @@ const Admin = () => {
         const errResp = await response.json();
         throw new Error(errResp.error?.message || "Failed to send email via server.");
       }
-      alert("Email notification successfully sent to " + order.email);
+      showToast('Email sent to ' + order.email, 'success');
     } catch (error) {
       console.error(error);
       alert("Resend API Error:\n\n" + error.message);
@@ -167,7 +169,7 @@ const Admin = () => {
       }
     } catch (error) {
       console.error("Error updating status", error);
-      alert("Failed to update status or send email. Please check your backend.");
+      showToast('Status update failed. Check backend.', 'error');
     }
   };
 
@@ -600,6 +602,13 @@ const Admin = () => {
   );
 })()}
         </div>
+      {toast && (
+        <div className="admin-toast" data-type={toast.t}>
+          <span>{toast.t === 'success' ? '✅' : '⚠️'}</span>
+          <span style={{flex:1}}>{toast.msg}</span>
+          <button onClick={()=>setToast(null)} style={{background:'none',border:'none',color:'white',cursor:'pointer',fontSize:'1.2rem',lineHeight:1,padding:'0 4px'}}>x</button>
+        </div>
+      )}
       </main>
 
       {isPromoModalOpen && (

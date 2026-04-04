@@ -278,3 +278,12 @@
 .mini-step.done .mini-label{color:#16a34a;font-weight:600;}
 .mini-step.active .mini-dot{background:var(--primary-dark);border-color:var(--primary-dark);color:white;box-shadow:0 0 0 3px rgba(198,40,40,0.2);}
 .mini-step.active .mini-label{color:var(--primary-dark);font-weight:700;}
+
+
+/* ===== TOAST NOTIFICATION ===== */
+.admin-toast{position:fixed;bottom:28px;right:28px;z-index:9999;background:#166534;color:white;padding:14px 20px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);display:flex;align-items:center;gap:10px;font-size:0.9rem;font-weight:600;max-width:380px;min-width:260px;animation:slideUpToast 0.3s ease;}
+.admin-toast[data-type="error"]{background:#991B1B;}
+@keyframes slideUpToast{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+/* ===== MOBILE FIXES ===== */
+@media(max-width:480px){.admin-table th,.admin-table td{padding:10px 8px;font-size:0.78rem;}.section-header{flex-wrap:wrap;gap:10px;}.section-header h2{font-size:1.2rem;}.mini-label{font-size:0.6rem;}.customer-track-card{margin-bottom:10px;}.cust-card-header{padding:14px;}.ord-track-item{padding:12px;}.admin-modal{padding:20px;max-width:calc(100vw - 32px);}.promo-grid{grid-template-columns:1fr;}.admin-toast{bottom:16px;right:16px;left:16px;max-width:none;}}

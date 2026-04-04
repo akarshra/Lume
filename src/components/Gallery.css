@@ -10,3 +10,5 @@
 .rv-info{padding:10px 12px;}
 .rv-name{font-size:0.8rem;font-weight:600;color:var(--text-main);margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rv-price{font-size:0.8rem;color:var(--primary-dark);font-weight:700;margin:0;}
+
+@media(max-width:600px){.recently-viewed-section{margin-top:32px;padding-top:24px;}.rv-card{flex:0 0 130px;}.rv-card img{height:100px;}.product-hover-overlay{display:none;}}

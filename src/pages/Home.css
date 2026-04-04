@@ -8,3 +8,6 @@
 .time-value{font-size:2rem;font-weight:800;line-height:1;}
 .time-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;margin-top:4px;opacity:0.85;}
 @media(max-width:768px){.countdown-card{flex-direction:column;padding:28px 24px;text-align:center;}.countdown-right{justify-content:center;}.time-unit{min-width:60px;padding:12px 14px;}.time-value{font-size:1.5rem;}}
+
+@media(max-width:768px){.stats-features-grid{grid-template-columns:repeat(2,1fr);gap:16px;}.features-grid{grid-template-columns:repeat(2,1fr);gap:16px;}.stat-feature-card,.feature-card{padding:24px 16px;}}
+@media(max-width:480px){.stats-features-grid{grid-template-columns:1fr 1fr;}.features-grid{grid-template-columns:1fr;}.stat-number{font-size:1.8rem;}}

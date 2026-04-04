@@ -56,3 +56,6 @@ select.status-pill{border:none;cursor:pointer;font-family:var(--font-body);}
 .payment-option.selected{border-color:var(--accent-gold)!important;background:var(--primary)!important;}
 @media(max-width:768px){.container{padding:0 16px;}.section{padding:64px 0;}.subtitle{font-size:0.95rem;}.hide-mobile{display:none!important;}}
 @media(min-width:769px){.show-mobile{display:none!important;}}
+
+/* ===== GLOBAL MOBILE FIXES ===== */
+@media(max-width:480px){.btn-primary,.btn-secondary{padding:12px 22px;font-size:0.9rem;}.title-secondary{font-size:clamp(1.4rem,6vw,2rem)!important;}.content-card{padding:20px 16px;}.glass-panel{border-radius:16px;}}
