@@ -6,7 +6,7 @@ import { CreditCard, Banknote, ArrowLeft, ShieldCheck, Gift } from "lucide-react
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import StripeCheckoutForm from "../components/StripeCheckoutForm";
-import { addOrder, getPromos } from "../services/api";
+import { addOrder, getPromos, getAddresses, addAddress, updateUserPetals } from "../services/api";
 import { Helmet } from "react-helmet-async";
 import "./CheckoutPage.css";
 const stripePromise = loadStripe("pk_test_51T4bcOLkWChg5JeJdTPGkNttxonAEO6SuRYpKMuxggvRKXRXRCbaxwgp9wBwwy7anqdJrck1wPNXmXE9vekGtZk700Ob1bx4pL");
@@ -21,6 +21,26 @@ const CheckoutPage = () => {
   const [promoCodeInput, setPromoCodeInput] = useState("");
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [promoError, setPromoError] = useState("");
+  
+  // Phase 1 Features State
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [saveCurrentAddress, setSaveCurrentAddress] = useState(false);
+  const userPetals = user ? parseInt(user.user_metadata?.petals || 0, 10) : 0;
+  const [usePetals, setUsePetals] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      getAddresses(user.id).then(addrs => {
+        setSavedAddresses(addrs);
+        if (addrs.length > 0 && !formData.address) {
+          setFormData(prev => ({ ...prev, address: addrs[0].address, name: addrs[0].name || prev.name, phone: addrs[0].phone || prev.phone }));
+        }
+      });
+      if (user.user_metadata?.name && !formData.name) setFormData(prev => ({ ...prev, name: user.user_metadata.name }));
+      if (user.email && !formData.email) setFormData(prev => ({ ...prev, email: user.email }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
   if (cartItems.length === 0) return (
     <div className="container section page-enter-active text-center" style={{ paddingTop: "120px" }}>
       <Helmet><title>Checkout | Lumé</title></Helmet>
@@ -34,11 +54,16 @@ const CheckoutPage = () => {
     if (appliedPromo.discount.includes("%")) { const pct = parseInt(appliedPromo.discount.replace("%", ""), 10); discountAmount = Math.round((subtotal * pct) / 100); }
     else if (appliedPromo.discount.includes("₹")) { discountAmount = parseInt(appliedPromo.discount.replace("₹", ""), 10); }
   }
-  const discountedSubtotal = Math.max(0, subtotal - discountAmount);
+  let petalsDiscount = 0;
+  if (usePetals && userPetals > 0) {
+    petalsDiscount = Math.min(userPetals, subtotal - discountAmount); // 1 Petal = ₹1
+  }
+  const discountedSubtotal = Math.max(0, subtotal - discountAmount - petalsDiscount);
   const gstAmount = Math.round(discountedSubtotal * 0.18);
   const codCharge = formData.paymentMethod === "cod" ? 100 : 0;
   const grandTotal = discountedSubtotal + gstAmount + codCharge;
   const totalAmountStr = "₹" + grandTotal.toLocaleString("en-IN");
+  const earnedPetals = Math.floor(grandTotal / 100);
   const handleApplyPromo = async () => {
     setPromoError(""); if (!promoCodeInput.trim()) return;
     try { const promos = await getPromos(); const cd = promos.find(p => p.code.toLowerCase() === promoCodeInput.trim().toLowerCase()); if (cd) setAppliedPromo(cd); else setPromoError("Invalid promo code"); }
@@ -49,7 +74,21 @@ const CheckoutPage = () => {
   const handleConfirmOrder = async () => {
     const itemSummary = cartItems.map(item => item.quantity + "x " + item.name).join(", ");
     const newOrder = { id: Date.now().toString(), date: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" }), customer: formData.name, email: formData.email, phone: formData.phone, address: formData.address || "", paymentMethod: formData.paymentMethod, item: itemSummary, amount: grandTotal, status: "Pending", type: "Cart Order", platform: "direct", user_id: user ? user.id : null, giftMessage: formData.giftMessage || null };
-    try { await addOrder(newOrder); navigate("/success", { state: { order: newOrder } }); }
+    try { 
+      await addOrder(newOrder); 
+      if (user) {
+        if (usePetals && petalsDiscount > 0) {
+          await updateUserPetals(-petalsDiscount);
+        }
+        if (earnedPetals > 0) {
+          await updateUserPetals(earnedPetals);
+        }
+        if (saveCurrentAddress && user.id) {
+          await addAddress({ user_id: user.id, address: formData.address, name: formData.name, phone: formData.phone });
+        }
+      }
+      navigate("/success", { state: { order: newOrder, earnedPetals } }); 
+    }
     catch { alert("Failed to place order. Please try again."); }
   };
   const handleInitialFormSubmit = async (e) => {
@@ -92,7 +131,24 @@ const CheckoutPage = () => {
                   <div className="form-group" style={{ marginBottom: "20px" }}><label htmlFor="email" style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "#555" }}>Email Address</label><input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required placeholder="e.g. jane@example.com" style={{ width: "100%", padding: "12px 16px", border: "1px solid #ddd", borderRadius: "8px", fontSize: "1rem" }} /></div>
                   <div className="form-group" style={{ marginBottom: "20px" }}><label htmlFor="phone" style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "#555" }}>Phone Number</label><input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} required placeholder="+91 98765 43210" style={{ width: "100%", padding: "12px 16px", border: "1px solid #ddd", borderRadius: "8px", fontSize: "1rem" }} /></div>
                 </div>
+                {savedAddresses.length > 0 && (
+                  <div className="form-group" style={{ marginBottom: "20px" }}>
+                    <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "#555" }}>Saved Addresses</label>
+                    <select onChange={(e) => setFormData(p => ({...p, address: e.target.value}))} style={{ width: "100%", padding: "12px 16px", border: "1px solid #ddd", borderRadius: "8px", fontSize: "1rem" }}>
+                      <option value="">-- Select a saved address --</option>
+                      {savedAddresses.map(a => <option key={a.id} value={a.address}>{a.address.substring(0, 40)}...</option>)}
+                    </select>
+                  </div>
+                )}
                 <div className="form-group" style={{ marginBottom: "20px" }}><label htmlFor="address" style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "#555" }}>Complete Delivery Address</label><textarea id="address" name="address" value={formData.address} onChange={handleChange} required placeholder="Enter full street address, apartment, and zip code..." rows="3" style={{ width: "100%", padding: "12px 16px", border: "1px solid #ddd", borderRadius: "8px", fontSize: "1rem", resize: "vertical" }} /></div>
+                {user && (
+                  <div className="form-group" style={{ marginBottom: "20px" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "0.9rem", color: "#555" }}>
+                      <input type="checkbox" checked={saveCurrentAddress} onChange={(e) => setSaveCurrentAddress(e.target.checked)} style={{ accentColor: "var(--primary-dark)", width: "16px", height: "16px" }} />
+                      Save this address for next time
+                    </label>
+                  </div>
+                )}
                 <div className="form-group" style={{ marginBottom: "20px" }}>
                   <label style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", fontSize: "0.9rem", color: "#555" }}><Gift size={16} color="#d97706"/> Gift Message <span style={{ fontWeight: "400", color: "#999" }}>(optional)</span></label>
                   <textarea id="giftMessage" name="giftMessage" value={formData.giftMessage} onChange={handleChange} placeholder="Add a personal message to be printed on the invoice e.g. Happy Birthday Sarah! Love you always." rows="2" style={{ width: "100%", padding: "12px 16px", border: "1.5px solid #fde68a", borderRadius: "8px", fontSize: "0.95rem", resize: "vertical", background: "#fffbeb" }} />
@@ -130,12 +186,22 @@ const CheckoutPage = () => {
               {promoError && <p style={{ color: "#d9534f", fontSize: "0.8rem", marginTop: "6px" }}>{promoError}</p>}
               {appliedPromo && <p style={{ color: "#10b981", fontSize: "0.8rem", marginTop: "6px" }}>Promo applied! Saving ₹{discountAmount.toLocaleString("en-IN")}</p>}
             </div>
+            {userPetals > 0 && (
+              <div style={{ marginBottom: "20px", background: "#fdf8f6", padding: "12px", borderRadius: "8px", border: "1px dashed #f43f5e" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "0.9rem", color: "#d9264c", fontWeight: "600" }}>
+                  <input type="checkbox" checked={usePetals} onChange={(e) => setUsePetals(e.target.checked)} style={{ accentColor: "#f43f5e", width: "18px", height: "18px" }} />
+                  Redeem {userPetals} Petal Points (-₹{Math.min(userPetals, subtotal - discountAmount)})
+                </label>
+              </div>
+            )}
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", fontSize: "0.9rem", color: "#555" }}><span>Subtotal</span><span>₹{subtotal.toLocaleString("en-IN")}</span></div>
             {appliedPromo && <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", fontSize: "0.9rem", color: "#10b981" }}><span>Discount ({appliedPromo.code})</span><span>-₹{discountAmount.toLocaleString("en-IN")}</span></div>}
+            {petalsDiscount > 0 && <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", fontSize: "0.9rem", color: "#f43f5e" }}><span>Petals Redeemed</span><span>-₹{petalsDiscount.toLocaleString("en-IN")}</span></div>}
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", fontSize: "0.9rem", color: "#555" }}><span>GST (18%)</span><span>₹{gstAmount.toLocaleString("en-IN")}</span></div>
             {formData.paymentMethod === "cod" && <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", fontSize: "0.9rem", color: "#555" }}><span>COD Charge</span><span>₹100</span></div>}
             <hr style={{ border: "none", borderTop: "1px solid #eee", margin: "20px 0" }}/>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "1.2rem", fontWeight: "bold", color: "var(--primary-dark)" }}><span>Total</span><span>{totalAmountStr}</span></div>
+            <div style={{ textAlign: "center", marginTop: "16px", fontSize: "0.85rem", color: "#10b981", fontWeight: "500" }}>✨ You will earn {earnedPetals} Petals!</div>
           </div>
         </div>
       </div>

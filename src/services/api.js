@@ -281,3 +281,27 @@ export const getAllReviews = async () => {
   if (error) { console.warn('getAllReviews error:', error); return []; }
   return data;
 };
+
+// --- Addresses ---
+export const getAddresses = async (userId) => {
+  if (!userId) return [];
+  const { data, error } = await supabase.from('addresses').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+  if (error) { console.error('API Error:', error); return []; }
+  return data;
+};
+
+export const addAddress = async (addressData) => {
+  const { data, error } = await supabase.from('addresses').insert([addressData]).select();
+  if (error) { console.error('API Error:', error); throw error; }
+  return data[0];
+};
+
+export const updateUserPetals = async (petalsChange) => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  const currentPetals = parseInt(user.user_metadata?.petals || 0, 10);
+  const newPetals = Math.max(0, currentPetals + petalsChange);
+  const { error } = await supabase.auth.updateUser({ data: { petals: newPetals } });
+  if (error) { console.error('API Error:', error); throw error; }
+  return newPetals;
+};
