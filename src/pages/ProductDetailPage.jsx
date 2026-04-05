@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, ShoppingCart, Heart, Star, Share2, CheckCircle } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
-import { getProducts, getWishlist, toggleWishlist } from "../services/api";
+import { getProducts, getWishlist, toggleWishlist, getComplementaryItems } from "../services/api";
 import ReviewSection from "../components/ReviewSection";
 import { Helmet } from "react-helmet-async";
 import "./ProductDetailPage.css";
@@ -17,12 +17,18 @@ const ProductDetailPage = () => {
   const [wishlisted, setWishlisted] = useState(false);
   const [added, setAdded] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [complementary, setComplementary] = useState([]);
   useEffect(() => {
     getProducts().then(prods=>{
       const all=prods&&prods.length>0?prods:MANUAL;
       const found=all.find(p=>String(p.id)===String(id))||MANUAL.find(p=>String(p.id)===String(id));
       setProduct(found||null);setLoading(false);
-    }).catch(()=>{setProduct(MANUAL.find(p=>String(p.id)===String(id))||null);setLoading(false);});
+      if(found) getComplementaryItems(found.name).then(items => setComplementary(items));
+    }).catch(()=>{
+      const found = MANUAL.find(p=>String(p.id)===String(id));
+      setProduct(found||null);setLoading(false);
+      if(found) getComplementaryItems(found.name).then(items => setComplementary(items));
+    });
     if(user) getWishlist(user.id).then(ids=>setWishlisted(ids.includes(id))).catch(()=>{});
   },[id,user]);
   const handleAddToCart=()=>{
@@ -30,7 +36,7 @@ const ProductDetailPage = () => {
   };
   const handleWishlist=async()=>{
     if(!user){alert("Please sign in to save items.");return;}
-    try{const isAdded=await toggleWishlist(id,user.id);setWishlisted(isAdded);}catch{}
+    try{const isAdded=await toggleWishlist(id,user.id);setWishlisted(isAdded);}catch(err){console.error(err);}
   };
   const handleShare=()=>{
     if(navigator.share){navigator.share({title:product.name,url:window.location.href}).catch(()=>{});
@@ -63,6 +69,7 @@ const ProductDetailPage = () => {
             {priceNum>0&&<p className="price-breakdown">Inclusive of all taxes • Subtotal ₹{Math.round(priceNum/1.18).toLocaleString('en-IN')} + GST ₹{gst.toLocaleString('en-IN')}</p>}
             <p className="product-detail-desc">{product.description}</p>
             <div className="detail-perks">
+              {/* eslint-disable-next-line no-unused-vars */}
               {[[CheckCircle,"12+ folds per petal"],[CheckCircle,"Premium satin ribbons"],[CheckCircle,"3-5 day delivery"],[CheckCircle,"Everlasting bloom"]].map(([Icon,txt],i)=>(
                 <div key={i} className="perk-item"><Icon size={16} color="#16a34a"/><span>{txt}</span></div>
               ))}
@@ -78,6 +85,22 @@ const ProductDetailPage = () => {
           </div>
         </div>
         <ReviewSection productId={id} productName={product.name}/>
+
+        {complementary.length > 0 && (
+          <div className="complementary-items" style={{marginTop: '48px', paddingTop: '48px', borderTop: '1px solid #eee'}}>
+            <h2 className="title-secondary text-center" style={{marginBottom: '32px'}}>Frequently Bought Together</h2>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '24px'}}>
+              {complementary.map(comp => (
+                <div key={comp.id} className="glass-panel" style={{padding: '16px', borderRadius: '12px', cursor: 'pointer'}} onClick={() => navigate(`/product/${comp.id}`)}>
+                  <img src={comp.image} alt={comp.name} style={{width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px', marginBottom: '12px'}}/>
+                  <div style={{fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold'}}>{comp.category}</div>
+                  <div style={{fontWeight: '500', fontSize: '1.1rem'}}>{comp.name}</div>
+                  <div style={{color: '#666', marginTop: '4px'}}>{String(comp.price).includes('₹') ? comp.price : `₹${Number(comp.price).toLocaleString('en-IN')}`}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

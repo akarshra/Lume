@@ -11,12 +11,10 @@ const WishlistPage = () => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
-  const [wishlistIds, setWishlistIds] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    if(!user){setLoading(false);return;}
+    if(!user){setTimeout(() => setLoading(false), 0);return;}
     Promise.all([getWishlist(user.id),getProducts()]).then(([ids,prods])=>{
-      setWishlistIds(ids);
       const manual=[{id:'1',name:"Midnight Sparkle Rose",category:"Anniversary",price:"₹1,599",image:"/images/ig/1.webp"},{id:'2',name:"Crimson Delight",category:"Romantic",price:"₹1,199",image:"/images/ig/2.webp"},{id:'3',name:"Classic Anniversary Rose",category:"Anniversary",price:"₹1,299",image:"/images/ig/3.webp"},{id:'4',name:"Golden Proposal",category:"Proposal",price:"₹2,499",image:"/images/ig/4.webp"},{id:'5',name:"Lavender Dreams",category:"Birthday",price:"₹999",image:"/images/ig/5.webp"},{id:'6',name:"Soft Blush Elegance",category:"Custom",price:"From ₹1,499",image:"/images/ig/6.webp"},{id:'7',name:"Bridal White Bouquet",category:"Wedding",price:"₹3,499",image:"/images/ig/7.png"}];
       const all=prods&&prods.length>0?prods:manual;
       setProducts(all.filter(p=>ids.includes(p.id)));
@@ -24,7 +22,7 @@ const WishlistPage = () => {
     }).catch(()=>setLoading(false));
   },[user]);
   const handleRemove = async(productId)=>{
-    try{await toggleWishlist(productId,user.id);setWishlistIds(w=>w.filter(i=>i!==productId));setProducts(p=>p.filter(i=>i.id!==productId));}catch{}
+    try{await toggleWishlist(productId,user.id);setProducts(p=>p.filter(i=>i.id!==productId));}catch(e){console.error(e);}
   };
   if(!user) return(<div className="wishlist-page page-enter-active"><Helmet><title>My Wishlist | Lumé</title></Helmet><div className="container text-center" style={{paddingTop:'120px',minHeight:'60vh'}}><Heart size={56} color="#C62828" style={{marginBottom:'16px'}}/><h2 className="title-secondary">Sign in to view your wishlist</h2><Link to="/account" className="btn-primary" style={{marginTop:'20px'}}>Sign In</Link></div></div>);
   return (

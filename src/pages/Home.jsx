@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { Sparkles, Heart, Award, Clock, Truck, ShieldCheck, ArrowRight, Star, Timer } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import "./Home.css";
+// eslint-disable-next-line no-unused-vars
 const StatCard = ({ number, label, icon: Icon, delay }) => (
   <div className="stat-feature-card reveal-up" style={{ animationDelay: delay }}>
     <div className="stat-icon-wrap"><Icon size={24} /></div>
@@ -14,6 +15,7 @@ const StatCard = ({ number, label, icon: Icon, delay }) => (
     <div className="stat-label">{label}</div>
   </div>
 );
+// eslint-disable-next-line no-unused-vars
 const FeatureCard = ({ icon: Icon, title, desc, delay }) => (
   <div className="feature-card reveal-up" style={{ animationDelay: delay }}>
     <div className="feature-icon"><Icon size={22} /></div>

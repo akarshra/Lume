@@ -30,10 +30,10 @@ const ContactPage = () => {
       await supabase.from("contacts").insert([{ name: formData.name, email: formData.email, message: formData.message }]);
       try {
         await fetch("/api/contact-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: formData.name, email: formData.email, message: formData.message }) });
-      } catch {}
+      } catch (err) { console.error("Email API failed:", err); }
       setSubmitStatus("done");
       setFormData({ name: "", email: "", message: "" });
-    } catch { setSubmitStatus("error"); }
+    } catch (err) { console.error(err); setSubmitStatus("error"); }
   };
   return (
     <div className="contact-page-wrapper fade-in">

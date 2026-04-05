@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, ShoppingBag, Database, Tag, TrendingUp, Users, Mail,
   ChevronDown, MapPin, ExternalLink, 
-  Plus, Trash2, Send, Lock, Download, Search, X, AlertTriangle, ArrowUpRight, Gift 
+  Plus, Trash2, Send, Lock, Download, Search, X, AlertTriangle, ArrowUpRight, Gift, Sparkles
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { 
@@ -46,6 +46,12 @@ const Admin = () => {
   const [expandedCustomer, setExpandedCustomer] = useState(null);
   const [contacts, setContacts] = useState([]);
   const [toast, setToast] = useState(null);
+  
+  // AI Marketing State
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiCampaignResult, setAiCampaignResult] = useState(null);
+
   const showToast = (msg, type) => { const t = type || 'success'; setToast({ msg, t }); setTimeout(() => setToast(null), 4000); };
 
   useEffect(() => {
@@ -239,6 +245,39 @@ const Admin = () => {
     }
   };
 
+  const handleGenerateCampaign = async () => {
+    if (!aiPrompt.trim()) return;
+    setAiGenerating(true);
+    setAiCampaignResult(null);
+    try {
+      const res = await fetch('/api/generate-campaign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: aiPrompt })
+      });
+      const data = await res.json();
+      setAiCampaignResult(data);
+    } catch {
+      showToast("Generation failed", "error");
+    }
+    setAiGenerating(false);
+  };
+
+  const handleLaunchCampaign = async () => {
+     try {
+       // Add promo code
+       await addPromoApi({ code: aiCampaignResult.promoCode, discount: aiCampaignResult.discount + '%', usage: 100 });
+       // We log the mock email sending instead of blasting users since we restricted it
+       console.log("Mocking email blast with Resend to users for safety. Subject: ", aiCampaignResult.subject);
+       showToast("Campaign Launched! Promo created.", "success");
+       setAiCampaignResult(null);
+       setAiPrompt("");
+       fetchPromos();
+     } catch {
+       showToast("Failed to launch", "error");
+     }
+  };
+
 
   const exportOrdersCSV = () => {
     const headers = ["ID","Customer","Email","Phone","Item","Amount","Status","Date","Payment","Address"];
@@ -364,7 +403,8 @@ const Admin = () => {
             {lowStockItems.length > 0 && <span style={{ background: '#ef4444', color: 'white', fontSize: '0.7rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '10px' }}>{lowStockItems.length}</span>}
           </button>
           <button className={activeTab === 'bouquets' ? 'active' : ''} onClick={() => setActiveTab('bouquets')}><Gift size={20}/> Bouquets</button>
-          <button className={activeTab === 'promos' ? 'active' : ''} onClick={() => setActiveTab('promos')}><Tag size={20}/> Marketing</button>
+          <button className={activeTab === 'promos' ? 'active' : ''} onClick={() => setActiveTab('promos')}><Tag size={20}/> Manual Promos</button>
+          <button className={activeTab === 'ai-marketing' ? 'active' : ''} onClick={() => setActiveTab('ai-marketing')}><Sparkles size={20}/> AI Marketing</button>
           <button className={activeTab === 'customers' ? 'active' : ''} onClick={() => setActiveTab('customers')}><Users size={20}/> Customers</button>
           <button className={activeTab === 'inquiries' ? 'active' : ''} onClick={() => setActiveTab('inquiries')}><Mail size={20}/> Inquiries</button>
         </nav>
@@ -551,6 +591,35 @@ const Admin = () => {
             </div>
           )}
 
+          {activeTab === 'ai-marketing' && (
+            <div className="admin-section fade-in">
+              <div className="section-header">
+                <h2>AI Promotional Campaign Generator</h2>
+              </div>
+              <div className="content-card" style={{ marginBottom: '24px' }}>
+                 <p style={{marginBottom: '16px', color: 'var(--text-muted)'}}>Instantly generate email copy, subject lines, and a custom promo code by providing a simple theme or topic.</p>
+                 <div style={{display: 'flex', gap: '12px'}}>
+                   <input type="text" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder="e.g. Spring pastel sale for Mother's Day..." style={{flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #ddd'}} />
+                   <button className="btn-primary" onClick={handleGenerateCampaign} disabled={aiGenerating}>
+                     {aiGenerating ? "Generating..." : <><Sparkles size={18}/> Generate Campaign</>}
+                   </button>
+                 </div>
+              </div>
+
+              {aiCampaignResult && (
+                <div className="content-card fade-in" style={{background: '#f8fafc', borderLeft: '4px solid var(--primary)'}}>
+                   <h3 style={{marginBottom: '16px'}}>Campaign Preview</h3>
+                   <div style={{marginBottom: '12px'}}><strong>Subject:</strong> {aiCampaignResult.subject}</div>
+                   <div style={{marginBottom: '12px'}}><strong>Promo Code Generated:</strong> <span className="status-pill crafting">{aiCampaignResult.promoCode}</span> ({aiCampaignResult.discount}% Off)</div>
+                   <div style={{marginBottom: '24px', padding: '16px', background: 'white', borderRadius: '8px', border: '1px solid #eee'}} dangerouslySetInnerHTML={{__html: aiCampaignResult.bodyHTML}}></div>
+                   
+                   <p style={{fontSize: '0.8rem', color: '#666', marginBottom: '16px'}}>* Clicking Launch will create the promo code instantly and simulate sending emails to your customers.</p>
+                   <button className="btn-primary" onClick={handleLaunchCampaign} style={{width: '100%'}}>Launch Campaign</button>
+                </div>
+              )}
+            </div>
+          )}
+
           {activeTab === 'customers' && (() => {
   const gi=(s)=>{const t=(s||'').toLowerCase();return t.includes('delivered')?3:t.includes('transit')?2:t.includes('crafting')?1:0;};
   const S=['Confirmed','Crafting','In Transit','Delivered'];
@@ -606,19 +675,34 @@ const Admin = () => {
 })()}
 
 
-          {activeTab === 'inquiries' && (
-            <div className="admin-section fade-in">
-              <div className="section-header"><h2>Wedding &amp; Contact Inquiries</h2><span style={{background:'#eff6ff',color:'#1d4ed8',padding:'4px 14px',borderRadius:'20px',fontSize:'0.85rem',fontWeight:'600'}}>{contacts.length} inquiries</span></div>
-              {contacts.length===0?(<div className="content-card" style={{padding:'48px',textAlign:'center',color:'var(--text-muted)'}}>No inquiries yet.</div>):(
-                <div className="content-card">
-                  <table className="admin-table">
-                    <thead><tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th></tr></thead>
-                    <tbody>{contacts.map((ct,i)=>(<tr key={i}><td><strong>{ct.name}</strong></td><td>{ct.email||'-'}</td><td style={{maxWidth:'320px',fontSize:'0.82rem',color:'var(--text-muted)'}}>{ct.message}</td><td style={{fontSize:'0.8rem',whiteSpace:'nowrap'}}>{ct.created_at?new Date(ct.created_at).toLocaleDateString('en-IN'):'-'}</td></tr>))}</tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
+          {activeTab === 'inquiries' && (() => {
+            const weddingInquiries = contacts.filter(c => c.message && c.message.startsWith('Wedding/Bulk Inquiry'));
+            const directInquiries = contacts.filter(c => !(c.message && c.message.startsWith('Wedding/Bulk Inquiry')));
+            
+            return (
+              <div className="admin-section fade-in">
+                <div className="section-header"><h2>Wedding Inquiries</h2><span style={{background:'#eff6ff',color:'#1d4ed8',padding:'4px 14px',borderRadius:'20px',fontSize:'0.85rem',fontWeight:'600'}}>{weddingInquiries.length} inquiries</span></div>
+                {weddingInquiries.length===0?(<div className="content-card" style={{padding:'48px',textAlign:'center',color:'var(--text-muted)',marginBottom: '40px'}}>No wedding inquiries yet.</div>):(
+                  <div className="content-card" style={{marginBottom: '40px'}}>
+                    <table className="admin-table">
+                      <thead><tr><th>Name</th><th>Email</th><th>Details</th><th>Date</th></tr></thead>
+                      <tbody>{weddingInquiries.map((ct,i)=>(<tr key={i}><td><strong>{ct.name}</strong></td><td>{ct.email||'-'}</td><td style={{maxWidth:'320px',fontSize:'0.82rem',color:'var(--text-muted)'}}>{ct.message.replace('Wedding/Bulk Inquiry | ', '')}</td><td style={{fontSize:'0.8rem',whiteSpace:'nowrap'}}>{ct.created_at?new Date(ct.created_at).toLocaleDateString('en-IN'):'-'}</td></tr>))}</tbody>
+                    </table>
+                  </div>
+                )}
+
+                <div className="section-header"><h2>Direct Inquiries</h2><span style={{background:'#eff6ff',color:'#1d4ed8',padding:'4px 14px',borderRadius:'20px',fontSize:'0.85rem',fontWeight:'600'}}>{directInquiries.length} inquiries</span></div>
+                {directInquiries.length===0?(<div className="content-card" style={{padding:'48px',textAlign:'center',color:'var(--text-muted)'}}>No direct inquiries yet.</div>):(
+                  <div className="content-card">
+                    <table className="admin-table">
+                      <thead><tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th></tr></thead>
+                      <tbody>{directInquiries.map((ct,i)=>(<tr key={i}><td><strong>{ct.name}</strong></td><td>{ct.email||'-'}</td><td style={{maxWidth:'320px',fontSize:'0.82rem',color:'var(--text-muted)'}}>{ct.message}</td><td style={{fontSize:'0.8rem',whiteSpace:'nowrap'}}>{ct.created_at?new Date(ct.created_at).toLocaleDateString('en-IN'):'-'}</td></tr>))}</tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
         </div>
       {toast && (

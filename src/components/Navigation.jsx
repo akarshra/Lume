@@ -15,7 +15,7 @@ const Navigation = () => {
   const cartItemCount = getCartCount();
   const isOwner = !!(user && user.email && user.email.toLowerCase() === OWNER_EMAIL.toLowerCase());
   useEffect(() => { window.scrollTo(0, 0); }, [location.pathname]);
-  useEffect(() => { setIsOpen(false); }, [location.pathname]);
+  useEffect(() => { setTimeout(() => setIsOpen(false), 0); }, [location.pathname]);
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll, { passive: true });

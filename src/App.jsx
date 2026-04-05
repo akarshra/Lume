@@ -13,12 +13,14 @@ import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import AccountPage from "./pages/AccountPage";
 import OrderTrackingPage from "./pages/OrderTrackingPage";
+import PromoLandingPage from "./pages/PromoLandingPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import WishlistPage from "./pages/WishlistPage";
 import WeddingPage from "./pages/WeddingPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
+import Chatbot from "./components/Chatbot";
 import "./App.css";
 function MainLayout() {
   const location = useLocation();
@@ -43,9 +45,11 @@ function MainLayout() {
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/wedding" element={<WeddingPage />} />
           <Route path="/product/:id" element={<ProductDetailPage />} />
+          <Route path="/promo/:campaignId" element={<PromoLandingPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
+      <Chatbot />
       {!isAdmin && <Footer />}
     </div>
   );

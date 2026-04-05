@@ -12,7 +12,7 @@ const WeddingPage = () => {
     e.preventDefault();setStatus("loading");
     try{
       await supabase.from("contacts").insert([{name:form.name,email:form.email,message:'Wedding/Bulk Inquiry | Phone:'+form.phone+' | Event:'+form.eventDate+' | Venue:'+form.venue+' | Qty:'+form.qty+' | Budget:'+form.budget+' | Notes:'+form.message}]);
-      try{await fetch('/api/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:'akarshsrivastava322@gmail.com',subject:'New Wedding/Bulk Inquiry from '+form.name,html:'<h2>Wedding Inquiry</h2><p>Name: '+form.name+'</p><p>Email: '+form.email+'</p><p>Phone: '+form.phone+'</p><p>Event Date: '+form.eventDate+'</p><p>Venue: '+form.venue+'</p><p>Quantity: '+form.qty+'</p><p>Budget: '+form.budget+'</p><p>Message: '+form.message+'</p>'})});}catch{}
+      try{await fetch('/api/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:'akarshsrivastava322@gmail.com',subject:'New Wedding/Bulk Inquiry from '+form.name,html:'<h2>Wedding Inquiry</h2><p>Name: '+form.name+'</p><p>Email: '+form.email+'</p><p>Phone: '+form.phone+'</p><p>Event Date: '+form.eventDate+'</p><p>Venue: '+form.venue+'</p><p>Quantity: '+form.qty+'</p><p>Budget: '+form.budget+'</p><p>Message: '+form.message+'</p>'})});}catch(e){console.error(e);}
       setStatus("done");setForm({name:"",email:"",phone:"",eventDate:"",venue:"",qty:"",budget:"",message:""});
     }catch{setStatus("error");}
   };
@@ -28,9 +28,10 @@ const WeddingPage = () => {
       </div>
       <div className="container">
         <div className="wedding-features">
+          {/* eslint-disable-next-line no-unused-vars */}
           {[[Heart,"Bridal Bouquets","Custom bridal arrangements with your chosen colour palette"],[Users,"Table Centrepieces","Stunning ribbon rose centrepieces for every table"],[Calendar,"Event Planning","We coordinate with your event timeline for on-time delivery"],[CheckCircle,"Bulk Discounts","Special pricing for orders of 10+ bouquets"]].map(([Icon,title,desc],i)=>(
             <div key={i} className="wedding-feature-card glass-panel">
-              <div className="feature-icon"><Icon size={24}/></div>
+              <div className="feature-icon"><Icon size={24} /></div>
               <h3>{title}</h3>
               <p>{desc}</p>
             </div>

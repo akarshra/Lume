@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import OrderModal from "./OrderModal";
 import BillModal from "./BillModal";
 import SkeletonCard from "./SkeletonCard";
-import { addOrder, getProducts, getWishlist, toggleWishlist } from "../services/api";
+import { addOrder, getTrendingProducts, getWishlist, toggleWishlist } from "../services/api";
 import "./Gallery.css";
 const COLOR_SWATCHES = [
   { label: "All", color: null },
@@ -28,7 +28,13 @@ const Gallery = ({ limit }) => {
   const [sortBy, setSortBy] = useState("default");
   const [searchQuery, setSearchQuery] = useState("");
   const [wishlist, setWishlist] = useState([]);
-  const [recentlyViewed, setRecentlyViewed] = useState([]);
+  const [recentlyViewed, setRecentlyViewed] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("lume_recently_viewed") || "[]");
+    } catch {
+      return [];
+    }
+  });
   const { addToCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -38,9 +44,7 @@ const Gallery = ({ limit }) => {
     else { Promise.resolve().then(() => { if(active) setWishlist([]); }); }
     return () => { active = false; };
   }, [user]);
-  useEffect(() => {
-    try { const rv = JSON.parse(localStorage.getItem("lume_recently_viewed") || "[]"); setRecentlyViewed(rv); } catch {}
-  }, []);
+
   useEffect(() => {
     const manualSelection = [
       { id: "1", name: "Midnight Sparkle Rose", category: "Anniversary", price: "₹1,599", description: "Elegant dark tones intertwined with sparkly ribbons for a magical evening.", image: "/images/ig/1.webp", igId: "l_u_m_eest._2026", color: "Dark Red" },
@@ -51,7 +55,7 @@ const Gallery = ({ limit }) => {
       { id: "6", name: "Soft Blush Elegance", category: "Custom", price: "From ₹1,499", description: "Customized pastel ribbons blending for weddings and special moments.", image: "/images/ig/6.webp", igId: "l_u_m_eest._2026", color: "Blush" },
       { id: "7", name: "Bridal White Bouquet", category: "Wedding", price: "₹3,499", description: "Pristine white silk ribbons formed into an opulent bridal arrangement.", image: "/images/ig/7.png", igId: "l_u_m_eest._2026", color: "White" },
     ];
-    getProducts().then(data => { setBouquets(data && data.length > 0 ? data : manualSelection); }).catch(() => setBouquets(manualSelection)).finally(() => setIsLoading(false));
+    getTrendingProducts().then(data => { setBouquets(data && data.length > 0 ? data : manualSelection); }).catch(() => setBouquets(manualSelection)).finally(() => setIsLoading(false));
   }, []);
   const trackRecentlyViewed = (item) => {
     try {
@@ -59,7 +63,7 @@ const Gallery = ({ limit }) => {
       const updated = [item, ...rv.filter(i => i.id !== item.id)].slice(0, 4);
       localStorage.setItem("lume_recently_viewed", JSON.stringify(updated));
       setRecentlyViewed(updated);
-    } catch {}
+    } catch (e) { console.error(e); }
   };
   const handleProductClick = (item) => { trackRecentlyViewed(item); navigate("/product/" + item.id); };
   const handleOpenModal = (product, platform) => setModalState({ isOpen: true, product, platform });
@@ -84,7 +88,7 @@ const Gallery = ({ limit }) => {
       const isAdded = await toggleWishlist(productId, user.id);
       if (isAdded) setWishlist([...wishlist, productId]);
       else setWishlist(wishlist.filter(id => id !== productId));
-    } catch {}
+    } catch (e) { console.error(e); }
   };
   const categories = ["All", ...new Set(bouquets.map(b => b.category))];
   let displayBouquets = [...bouquets];
@@ -129,7 +133,7 @@ const Gallery = ({ limit }) => {
                 ))}
               </div>
               <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ padding: "10px 16px", borderRadius: "8px", border: "1px solid #ddd", outline: "none", background: "#fff", cursor: "pointer" }}>
-                <option value="default">Sort Options</option>
+                <option value="default">Trending First (AI)</option>
                 <option value="price-asc">Price: Low to High</option>
                 <option value="price-desc">Price: High to Low</option>
               </select>

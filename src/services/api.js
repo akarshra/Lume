@@ -142,6 +142,76 @@ export const getProducts = async () => {
   return data;
 };
 
+export const getTrendingProducts = async () => {
+  // Aggregate from orders table to find most popular items
+  const { data: orders, error: ordersError } = await supabase.from('orders').select('item');
+  if (ordersError) return await getProducts(); // fallback to normal
+
+  // Simple frequency count.
+  const counts = {};
+  orders.forEach(o => {
+    if (o.item) {
+      o.item.split(',').forEach(i => {
+        const cleaned = i.trim().split(' (')[0]; 
+        counts[cleaned] = (counts[cleaned] || 0) + 1;
+      });
+    }
+  });
+
+  const { data: products } = await supabase.from('products').select('*');
+  
+  // Sort products by count (highest first)
+  if (products) {
+    return products.sort((a, b) => (counts[b.name] || 0) - (counts[a.name] || 0));
+  }
+  return [];
+};
+
+export const getComplementaryItems = async (productName) => {
+  // Look at orders that contained this productName
+  const { data: orders } = await supabase.from('orders').select('email, phone, item').ilike('item', `%${productName}%`);
+  
+  if (!orders || orders.length === 0) {
+    // Fallback: Random 3 products if no data
+    const { data } = await supabase.from('products').select('*').limit(3);
+    return data ? data.filter(p => p.name !== productName).slice(0, 3) : [];
+  }
+
+  // Find users who bought this
+  const users = new Set(orders.map(o => o.email || o.phone).filter(Boolean));
+  
+  // Find all orders by these users
+  const { data: userOrders } = await supabase.from('orders').select('item, email, phone');
+  
+  const counts = {};
+  if (userOrders) {
+    userOrders.forEach(o => {
+      if (users.has(o.email) || users.has(o.phone)) {
+        if (o.item) {
+          o.item.split(',').forEach(i => {
+            const cleaned = i.trim().split(' (')[0];
+            if (cleaned !== productName) { // Don't count the item itself
+              counts[cleaned] = (counts[cleaned] || 0) + 1;
+            }
+          });
+        }
+      }
+    });
+  }
+
+  // Get top 3 complementary names
+  const topNames = Object.keys(counts).sort((a, b) => counts[b] - counts[a]).slice(0, 3);
+  
+  if (topNames.length === 0) {
+     const { data } = await supabase.from('products').select('*').limit(3);
+     return data ? data.filter(p => p.name !== productName).slice(0, 3) : [];
+  }
+
+  // Fetch the actual product objects
+  const { data: products } = await supabase.from('products').select('*').in('name', topNames);
+  return products || [];
+};
+
 export const addProduct = async (dataInput) => {
   const { data, error } = await supabase.from('products').insert([dataInput]).select();
   if (error) {

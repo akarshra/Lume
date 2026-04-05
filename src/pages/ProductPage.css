@@ -1,0 +1,10 @@
+.product-page .product-hero {
+  border-radius: 18px;
+}
+
+@media (max-width: 900px) {
+  .product-page .product-hero {
+    grid-template-columns: 1fr !important;
+  }
+}
+

@@ -81,7 +81,7 @@ export default function OrderTrackingPage() {
     const p = new URLSearchParams(location.search);
     const id = p.get("id");
     if (id) { setTrackId(id); doSearch(id); }
-  }, []);
+  }, [location.search]);
   return (
     <div className="tracking-page">
       <Helmet><title>Track Order | Lumé</title></Helmet>
