@@ -11,8 +11,6 @@
     "start": "node api/index.js"
   },
   "dependencies": {
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.5.0",
     "@stripe/react-stripe-js": "^6.1.0",
     "@stripe/stripe-js": "^9.0.1",
     "@supabase/supabase-js": "^2.101.1",
@@ -27,8 +25,7 @@
     "react-router-dom": "^7.13.1",
     "recharts": "^3.8.1",
     "resend": "^6.10.0",
-    "stripe": "^21.0.1",
-    "three": "^0.183.2"
+    "stripe": "^21.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

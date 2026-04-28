@@ -38,8 +38,6 @@ const Gallery = ({ limit }) => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
-  // Phase 1: Social Proof
-  const [socialToast, setSocialToast] = useState(null);
   useEffect(() => {
     let active = true;
     if (user) { getWishlist(user.id).then(data => { if(active) setWishlist(data); }); }
@@ -56,26 +54,12 @@ const Gallery = ({ limit }) => {
       { id: "5", name: "Lavender Dreams", category: "Birthday", price: "₹999", description: "Sweet lavender and white ribbons for a perfect birthday gift.", image: "/images/ig/5.webp", igId: "l_u_m_eest._2026", color: "Lavender" },
       { id: "6", name: "Soft Blush Elegance", category: "Custom", price: "From ₹1,499", description: "Customized pastel ribbons blending for weddings and special moments.", image: "/images/ig/6.webp", igId: "l_u_m_eest._2026", color: "Blush" },
       { id: "7", name: "Bridal White Bouquet", category: "Wedding", price: "₹3,499", description: "Pristine white silk ribbons formed into an opulent bridal arrangement.", image: "/images/ig/7.png", igId: "l_u_m_eest._2026", color: "White" },
+      { id: "8", name: "Ocean Breeze Blue", category: "Birthday", price: "₹1,399", description: "Calming pastel blue satin ribbons capturing the essence of the sea.", image: "/images/ig/1.webp", igId: "l_u_m_eest._2026", color: "Blue" },
+      { id: "9", name: "Sunset Orange Glow", category: "Romantic", price: "₹1,499", description: "Warm terracotta and vibrant orange ribbons simulating a perfect sunset.", image: "/images/ig/2.webp", igId: "l_u_m_eest._2026", color: "Orange" },
+      { id: "10", name: "Majestic Purple Crown", category: "Anniversary", price: "₹1,899", description: "Deep royal purple intertwined with silver edge accents.", image: "/images/ig/3.webp", igId: "l_u_m_eest._2026", color: "Purple" },
     ];
-    getTrendingProducts().then(data => { setBouquets(data && data.length > 0 ? data : manualSelection); }).catch(() => setBouquets(manualSelection)).finally(() => setIsLoading(false));
+    getTrendingProducts().then(data => { setBouquets(data && data.length > 0 ? [...data, ...manualSelection.slice(0, 3)] : manualSelection); }).catch(() => setBouquets(manualSelection)).finally(() => setIsLoading(false));
   }, []);
-
-  // Social Proof UX Auto-trigger
-  useEffect(() => {
-    if (bouquets.length === 0) return;
-    let to1, to2, itv;
-    const showToast = () => {
-      const names = ["Priya", "Rahul", "Ananya", "Vikram", "Sneha", "Rohan", "Shruti", "Arjun", "Aditi"];
-      const cities = ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Pune", "Chennai", "Kolkata"];
-      const times = ["2 minutes ago", "just now", "10 minutes ago", "1 hour ago", "5 minutes ago"];
-      const b = bouquets[Math.floor(Math.random() * bouquets.length)];
-      setSocialToast(`Someone from ${cities[Math.floor(Math.random() * cities.length)]} bought the ${b.name} ${times[Math.floor(Math.random() * times.length)]}!`);
-      to2 = setTimeout(() => setSocialToast(null), 6000);
-    };
-    to1 = setTimeout(() => { showToast(); itv = setInterval(showToast, 20000); }, 5000);
-    return () => { clearTimeout(to1); clearTimeout(to2); clearInterval(itv); };
-  }, [bouquets]);
-
   const trackRecentlyViewed = (item) => {
     try {
       const rv = JSON.parse(localStorage.getItem("lume_recently_viewed") || "[]");
@@ -198,10 +182,6 @@ const Gallery = ({ limit }) => {
       </div>
       <OrderModal isOpen={modalState.isOpen} onClose={handleCloseModal} product={modalState.product} onConfirm={handleConfirmOrder} platform={modalState.platform}/>
       <BillModal isOpen={!!billOrder} onClose={closeBill} order={billOrder}/>
-      <div style={{ position: 'fixed', bottom: '24px', left: '24px', zIndex: 9999, background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(10px)', border: '1px solid rgba(244, 63, 94, 0.2)', padding: '12px 16px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', gap: '12px', transform: socialToast ? 'translateY(0)' : 'translateY(150%)', opacity: socialToast ? 1 : 0, transition: 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}>
-        <div style={{ background: '#fce7f3', color: '#db2777', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShoppingCart size={18} /></div>
-        <div style={{ fontSize: '0.85rem', color: '#374151', lineHeight: '1.4', maxWidth: '200px' }}><strong>{socialToast?.split(' bought ')[0]}</strong> bought {socialToast?.split(' bought ')[1]}</div>
-      </div>
     </section>
   );
 };

@@ -1,5 +1,5 @@
-.rr-scene{width:340px;height:340px;perspective:900px;position:relative;display:flex;align-items:center;justify-content:center;will-change: transform;}
-.rr-flower{width:4px;height:4px;position:relative;transform-style:preserve-3d;animation:rr-spin 9s linear infinite;will-change: transform;}
+.rr-scene{width:340px;height:340px;perspective:900px;position:relative;display:flex;align-items:center;justify-content:center}
+.rr-flower{width:4px;height:4px;position:relative;transform-style:preserve-3d;animation:rr-spin 9s linear infinite}
 @keyframes rr-spin{from{transform:rotateY(0deg) rotateX(22deg)}to{transform:rotateY(360deg) rotateX(22deg)}}
 .rr-petal{position:absolute;top:0;left:0;border-radius:50% 0 50% 0;transform-origin:center bottom;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.25))}
 .rr-outer{width:72px;height:105px;margin-left:-36px;margin-top:-2px;background:linear-gradient(145deg,#8b1a2e 0%,#d94060 55%,#f0899a 100%);opacity:0.92}
@@ -12,11 +12,3 @@
 @keyframes rr-spark{0%{transform:translateY(0) scale(0);opacity:0}15%{transform:translateY(-20px) scale(1);opacity:0.9}85%{transform:translateY(-80px) scale(0.6);opacity:0.4}100%{transform:translateY(-110px) scale(0);opacity:0}}
 .rr-ring{position:absolute;border-radius:50%;border:1.5px solid rgba(217,64,96,0.22);animation:rr-ring-expand 4s ease-out infinite;pointer-events:none}
 @keyframes rr-ring-expand{0%{transform:scale(0.4);opacity:0.7}100%{transform:scale(1.6);opacity:0}}
-
-/* Mobile UI Optimizations for low CPU strain */
-@media (max-width: 768px) {
-  .rr-scene { transform: scale(0.85); }
-  .rr-petal { filter: none; } /* Disable heavy drop shadow blur matrix */
-  .rr-ring, .rr-sparkle { display: none; } /* Hide heavily composite background features */
-  .rr-glow { opacity: 0.3 !important; animation: none; } /* Disable background repaints */
-}

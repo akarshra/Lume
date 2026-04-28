@@ -37,7 +37,7 @@ const ContactPage = () => {
   };
   return (
     <div className="contact-page-wrapper fade-in">
-      <Helmet><title>Contact Us | Lumé</title><meta name="description" content="Get in touch with Lumé for custom bouquets, wholesale and more."/></Helmet>
+      <Helmet><title>Contact Us | Lumé</title><meta name="description" content="Get in touch with Lumé for custom bouquets, wholesale and more." /></Helmet>
       <div className="container">
         <div className="contact-premium-grid">
           <div className="contact-story">
@@ -61,10 +61,10 @@ const ContactPage = () => {
               <h3 className="form-title">Send a Direct Inquiry</h3>
               <form className="mini-contact-form" onSubmit={handleSubmit}>
                 <div className="form-group-row">
-                  <input type="text" placeholder="Your Name" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
-                  <input type="email" placeholder="Your Email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                  <input type="text" placeholder="Your Name" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                  <input type="email" placeholder="Your Email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
                 </div>
-                <textarea placeholder="Tell us about your custom bouquet idea or question..." rows="4" required value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})}></textarea>
+                <textarea placeholder="Tell us about your custom bouquet idea or question..." rows="4" required value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })}></textarea>
                 {submitStatus === "error" && <p style={{ color: "#ef4444", fontSize: "0.85rem" }}>Something went wrong. Please try again.</p>}
                 <button type="submit" className="btn-send-message" disabled={submitStatus === "loading" || submitStatus === "done"}>
                   <span>{submitStatus === "done" ? "✓ Sent! We will reply within 24h" : submitStatus === "loading" ? "Sending..." : "Send Message"}</span>

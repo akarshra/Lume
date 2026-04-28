@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, ShoppingBag, Database, Tag, TrendingUp, Users, Mail,
-  ChevronDown, MapPin, ExternalLink, 
+  ChevronDown, MapPin, ExternalLink, Package, Palette, CheckCircle,
   Plus, Trash2, Send, Lock, Download, Search, X, AlertTriangle, ArrowUpRight, Gift, Sparkles
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { 
-  getOrders, deleteOrder as deleteOrderApi, clearAllOrders as clearAllOrdersApi,
+  getOrders, deleteOrder as deleteOrderApi, clearAllOrders as clearAllOrdersApi, addOrder,
   getInventory, addInventory as addInventoryApi, updateInventoryStatus, deleteInventoryItem,
   getPromos, addPromo as addPromoApi, deletePromoApi,
   getProducts, addProduct, deleteProduct
@@ -41,7 +40,9 @@ const Admin = () => {
   const [newItem, setNewItem] = useState({ name: '', stock: '', unit: 'Rolls' });
   const [newProduct, setNewProduct] = useState({ name: '', category: 'Signature Roses', price: '', description: '', image: '', color: '', igId: '' });
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [newPromo, setNewPromo] = useState({ code: '', discount: '', usage: '0' });
+  const [isIgModalOpen, setIsIgModalOpen] = useState(false);
+  const [newPromo, setNewPromo] = useState({ code: '', discount: '', usage: '' });
+  const [newIgOrder, setNewIgOrder] = useState({ customer: '', handle: '', phone: '', address: '', item: '', amount: '', paymentMethod: 'UPI' });
   const [isPromoModalOpen, setIsPromoModalOpen] = useState(false);
   const [expandedCustomer, setExpandedCustomer] = useState(null);
   const [contacts, setContacts] = useState([]);
@@ -148,6 +149,30 @@ const Admin = () => {
     }
   };
 
+  const handleDeleteInquiry = async (id) => {
+    if (!window.confirm("Delete this inquiry permanently?")) return;
+    try {
+      const { error } = await supabase.from('contacts').delete().eq('id', id);
+      if (error) throw error;
+      setContacts(contacts.filter(c => c.id !== id));
+      triggerToast('Inquiry deleted successfully', 'success');
+    } catch {
+      triggerToast('Failed to delete inquiry', 'error');
+    }
+  };
+
+  const handleMarkInquiryRead = async (id, currentStatus) => {
+    try {
+      const newStatus = currentStatus === 'Read' ? 'Unread' : 'Read';
+      const { error } = await supabase.from('contacts').update({ status: newStatus }).eq('id', id);
+      if (error) throw error;
+      setContacts(contacts.map(c => c.id === id ? { ...c, status: newStatus } : c));
+    } catch (e) {
+      console.error(e);
+      triggerToast('Could not update status.', 'error');
+    }
+  };
+
   const clearAllOrders = async () => {
     if (window.confirm("Are you sure you want to delete ALL order history? This cannot be undone.")) {
       try {
@@ -242,6 +267,33 @@ const Admin = () => {
       setIsProductModalOpen(false);
     } catch (error) {
       console.error("Error adding product", error);
+    }
+  };
+
+  const handleAddIgOrder = async (e) => {
+    e.preventDefault();
+    const orderObj = {
+      id: "IG-" + Date.now().toString().slice(-6),
+      date: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }),
+      customer: `${newIgOrder.customer} (${newIgOrder.handle})`,
+      email: "Instagram DM",
+      phone: newIgOrder.phone,
+      address: newIgOrder.address,
+      paymentMethod: newIgOrder.paymentMethod,
+      item: newIgOrder.item,
+      amount: newIgOrder.amount,
+      status: "Pending",
+      type: "Instagram Manual",
+      platform: "instagram"
+    };
+    try {
+      await addOrder(orderObj);
+      setOrders([orderObj, ...orders]);
+      setIsIgModalOpen(false);
+      setNewIgOrder({ customer: '', handle: '', phone: '', address: '', item: '', amount: '', paymentMethod: 'UPI' });
+      triggerToast('Instagram order logged successfully', 'success');
+    } catch {
+      triggerToast('Failed to log Instagram order', 'error');
     }
   };
 
@@ -388,6 +440,11 @@ const Admin = () => {
     );
   }
 
+  // --- Phase 3: Shipping Mock ---
+  const handleGenerateShippingLabel = async (order) => {
+    alert(`Generating Shiprocket Tracking ID for Order #${order.id.slice(-6)}...\nMock Success! Label generated. Your business account has been billed ₹80.`);
+  };
+
   return (
     <div className="admin-layout">
       <aside className="admin-sidebar">
@@ -397,7 +454,8 @@ const Admin = () => {
         </div>
         <nav className="sidebar-nav">
           <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => setActiveTab('overview')}><LayoutDashboard size={20}/> Overview</button>
-          <button className={activeTab === 'orders' ? 'active' : ''} onClick={() => setActiveTab('orders')}><ShoppingBag size={20}/> Orders</button>
+          <button className={activeTab === 'orders' ? 'active' : ''} onClick={() => setActiveTab('orders')}><ShoppingBag size={20}/> Standard Orders</button>
+          <button className={activeTab === 'custom-orders' ? 'active' : ''} onClick={() => setActiveTab('custom-orders')}><Palette size={20}/> Custom Orders</button>
           <button className={activeTab === 'inventory' ? 'active' : ''} onClick={() => setActiveTab('inventory')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Database size={20}/> Inventory</div>
             {lowStockItems.length > 0 && <span style={{ background: '#ef4444', color: 'white', fontSize: '0.7rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '10px' }}>{lowStockItems.length}</span>}
@@ -478,8 +536,11 @@ const Admin = () => {
             <div className="admin-section fade-in">
               <div className="section-header">
                 <h2>Order Management</h2>
-                <button className="btn-outline-danger" onClick={clearAllOrders}><Trash2 size={16}/> Clear History</button>
-                <button className="btn-secondary" onClick={exportOrdersCSV} style={{display:"flex",alignItems:"center",gap:"6px"}}><Download size={16}/> Export CSV</button>
+                <div style={{display:'flex', gap:'8px'}}>
+                  <button className="btn-primary" onClick={() => setIsIgModalOpen(true)}><Plus size={16}/> Record IG Order</button>
+                  <button className="btn-outline-danger" onClick={clearAllOrders}><Trash2 size={16}/> Clear History</button>
+                  <button className="btn-secondary" onClick={exportOrdersCSV} style={{display:"flex",alignItems:"center",gap:"6px"}}><Download size={16}/> Export CSV</button>
+                </div>
               </div>
               <div className="content-card">
                 <table className="admin-table">
@@ -505,11 +566,61 @@ const Admin = () => {
                             <option value="In Transit">In Transit</option>
                             <option value="Delivered">Delivered</option>
                           </select>
+                          {o.status === "In Transit" && (
+                            <button onClick={() => handleGenerateShippingLabel(o)} style={{ marginTop: '8px', fontSize: '0.7rem', padding: '4px 8px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <Package size={12}/> Generate Label
+                            </button>
+                          )}
                         </td>
                         <td>
                            <div style={{ display: 'flex', gap: '8px' }}>
                              <button onClick={() => handleEmailNotify(o)} className="btn-primary" style={{ padding: '6px', borderRadius: '6px', background: '#3b82f6', border: 'none' }} title="Send Email Update Notification"><Send size={16}/></button>
                            </div>
+                        </td>
+                        <td><button className="btn-icon-delete" onClick={() => deleteOrder(o.id)}><Trash2 size={18}/></button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'custom-orders' && (
+            <div className="admin-section fade-in">
+              <div className="section-header">
+                <h2>Custom Bouquet Orders</h2>
+                <span style={{background:'#eff6ff',color:'#1d4ed8',padding:'4px 14px',borderRadius:'20px',fontSize:'0.85rem',fontWeight:'600'}}>{orders.filter(o => o.item?.includes('Custom:') || o.type?.includes('Custom')).length} custom requests</span>
+              </div>
+              <div className="content-card">
+                <table className="admin-table">
+                  <thead><tr><th>Customer Info & Address</th><th>Requirements</th><th>Status</th><th>Notify</th><th>Action</th></tr></thead>
+                  <tbody>
+                    { orders.filter(o => o.item?.includes('Custom:') || o.type?.includes('Custom')).map(o => (
+                      <tr key={o.id}>
+                        <td>
+                          <strong>{o.customer}</strong><br/>
+                          <small style={{ color: '#64748b' }}>{o.email || "No Email"}</small><br/>
+                          <small>{o.phone}</small><br/>
+                          {o.address && <div style={{marginTop: '4px', fontSize: '0.8rem', background: '#f8fafc', padding: '6px', borderRadius: '4px', border: '1px solid #e2e8f0'}}><MapPin size={12} style={{marginRight: '2px', verticalAlign: 'middle'}}/>{o.address}</div>}
+                        </td>
+                        <td>{o.item}</td>
+                        <td>
+                          <select className={`status-pill ${o.status.toLowerCase().replace(' ', '-')}`} value={o.status} onChange={(e) => handleStatusChange(o.id, e.target.value, o)}>
+                            <option value="Paid">Deposit Paid</option>
+                            <option value="Consulting">Consulting</option>
+                            <option value="Crafting">Crafting</option>
+                            <option value="In Transit">In Transit</option>
+                            <option value="Delivered">Delivered</option>
+                          </select>
+                          {o.status === "In Transit" && (
+                            <button onClick={() => handleGenerateShippingLabel(o)} style={{ marginTop: '8px', fontSize: '0.7rem', padding: '4px 8px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <Package size={12}/> Generate Label
+                            </button>
+                          )}
+                        </td>
+                        <td>
+                           <button onClick={() => handleEmailNotify(o)} className="btn-primary" style={{ padding: '6px', borderRadius: '6px', background: '#3b82f6', border: 'none' }} title="Send Email Update Notification"><Send size={16}/></button>
                         </td>
                         <td><button className="btn-icon-delete" onClick={() => deleteOrder(o.id)}><Trash2 size={18}/></button></td>
                       </tr>
@@ -685,8 +796,10 @@ const Admin = () => {
                 {weddingInquiries.length===0?(<div className="content-card" style={{padding:'48px',textAlign:'center',color:'var(--text-muted)',marginBottom: '40px'}}>No wedding inquiries yet.</div>):(
                   <div className="content-card" style={{marginBottom: '40px'}}>
                     <table className="admin-table">
-                      <thead><tr><th>Name</th><th>Email</th><th>Details</th><th>Date</th></tr></thead>
-                      <tbody>{weddingInquiries.map((ct,i)=>(<tr key={i}><td><strong>{ct.name}</strong></td><td>{ct.email||'-'}</td><td style={{maxWidth:'320px',fontSize:'0.82rem',color:'var(--text-muted)'}}>{ct.message.replace('Wedding/Bulk Inquiry | ', '')}</td><td style={{fontSize:'0.8rem',whiteSpace:'nowrap'}}>{ct.created_at?new Date(ct.created_at).toLocaleDateString('en-IN'):'-'}</td></tr>))}</tbody>
+                      <thead><tr><th>Name</th><th>Email / Phone</th><th>Details</th><th>Date</th><th>Action</th></tr></thead>
+                      <tbody>{weddingInquiries.map((ct,i)=>(<tr key={ct.id || i} style={{ opacity: ct.status === 'Read' ? 0.6 : 1 }}><td><strong>{ct.name}</strong></td><td>{ct.email||'-'}<br/><small>{ct.phone}</small></td><td style={{maxWidth:'320px',fontSize:'0.82rem',color:'var(--text-muted)'}}>{ct.message.replace('Wedding/Bulk Inquiry | ', '')}</td><td style={{fontSize:'0.8rem',whiteSpace:'nowrap'}}>{ct.created_at?new Date(ct.created_at).toLocaleDateString('en-IN'):'-'}</td>
+                        <td><div style={{display:'flex', gap:'6px'}}><button onClick={() => handleMarkInquiryRead(ct.id, ct.status)} title="Mark as Read/Unread" className="btn-secondary" style={{padding:'4px 8px'}}><CheckCircle size={14}/></button> <button onClick={() => handleDeleteInquiry(ct.id)} title="Delete Inquiry" className="btn-icon-delete"><Trash2 size={14}/></button></div></td>
+                      </tr>))}</tbody>
                     </table>
                   </div>
                 )}
@@ -695,8 +808,10 @@ const Admin = () => {
                 {directInquiries.length===0?(<div className="content-card" style={{padding:'48px',textAlign:'center',color:'var(--text-muted)'}}>No direct inquiries yet.</div>):(
                   <div className="content-card">
                     <table className="admin-table">
-                      <thead><tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th></tr></thead>
-                      <tbody>{directInquiries.map((ct,i)=>(<tr key={i}><td><strong>{ct.name}</strong></td><td>{ct.email||'-'}</td><td style={{maxWidth:'320px',fontSize:'0.82rem',color:'var(--text-muted)'}}>{ct.message}</td><td style={{fontSize:'0.8rem',whiteSpace:'nowrap'}}>{ct.created_at?new Date(ct.created_at).toLocaleDateString('en-IN'):'-'}</td></tr>))}</tbody>
+                      <thead><tr><th>Name</th><th>Email / Phone</th><th>Message</th><th>Date</th><th>Action</th></tr></thead>
+                      <tbody>{directInquiries.map((ct,i)=>(<tr key={ct.id || i} style={{ opacity: ct.status === 'Read' ? 0.6 : 1 }}><td><strong>{ct.name}</strong></td><td>{ct.email||'-'}<br/><small>{ct.phone}</small></td><td style={{maxWidth:'320px',fontSize:'0.82rem',color:'var(--text-muted)'}}>{ct.message}</td><td style={{fontSize:'0.8rem',whiteSpace:'nowrap'}}>{ct.created_at?new Date(ct.created_at).toLocaleDateString('en-IN'):'-'}</td>
+                        <td><div style={{display:'flex', gap:'6px'}}><button onClick={() => handleMarkInquiryRead(ct.id, ct.status)} title="Mark as Read/Unread" className="btn-secondary" style={{padding:'4px 8px'}}><CheckCircle size={14}/></button> <button onClick={() => handleDeleteInquiry(ct.id)} title="Delete Inquiry" className="btn-icon-delete"><Trash2 size={14}/></button></div></td>
+                      </tr>))}</tbody>
                     </table>
                   </div>
                 )}
@@ -777,6 +892,35 @@ const Admin = () => {
               {newProduct.image && <img src={newProduct.image} style={{width: '60px', height: '60px', borderRadius: '8px', marginBottom: '1rem', objectFit: 'cover'}} alt="preview" />}
               <div className="form-group"><label>Description</label><input type="text" required value={newProduct.description} onChange={(e) => setNewProduct({...newProduct, description: e.target.value})} /></div>
               <button type="submit" className="btn-primary w-100" disabled={uploading}>Save Bouquet</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isIgModalOpen && (
+        <div className="admin-modal-overlay">
+          <div className="admin-modal glass-panel">
+            <div className="modal-header"><h3>Record Instagram Order</h3><button onClick={() => setIsIgModalOpen(false)}><X size={20}/></button></div>
+            <form onSubmit={handleAddIgOrder}>
+              <div className="form-row">
+                <div className="form-group"><label>Customer Name</label><input type="text" required value={newIgOrder.customer} onChange={(e) => setNewIgOrder({...newIgOrder, customer: e.target.value})} /></div>
+                <div className="form-group"><label>IG Handle</label><input type="text" required placeholder="@username" value={newIgOrder.handle} onChange={(e) => setNewIgOrder({...newIgOrder, handle: e.target.value})} /></div>
+              </div>
+              <div className="form-group"><label>Phone Number</label><input type="text" required value={newIgOrder.phone} onChange={(e) => setNewIgOrder({...newIgOrder, phone: e.target.value})} /></div>
+              <div className="form-group"><label>Full Delivery Address</label><textarea required rows="2" value={newIgOrder.address} onChange={(e) => setNewIgOrder({...newIgOrder, address: e.target.value})} ></textarea></div>
+              <div className="form-row">
+                <div className="form-group"><label>Exact Item Details</label><input type="text" required placeholder="1x Crimson Delight..." value={newIgOrder.item} onChange={(e) => setNewIgOrder({...newIgOrder, item: e.target.value})} /></div>
+                <div className="form-group"><label>Total Amount (₹)</label><input type="number" required value={newIgOrder.amount} onChange={(e) => setNewIgOrder({...newIgOrder, amount: e.target.value})} /></div>
+              </div>
+              <div className="form-group">
+                <label>Payment Method Used</label>
+                <select value={newIgOrder.paymentMethod} onChange={(e) => setNewIgOrder({...newIgOrder, paymentMethod: e.target.value})}>
+                  <option>UPI</option>
+                  <option>Cash On Delivery</option>
+                  <option>Bank Transfer</option>
+                </select>
+              </div>
+              <button type="submit" className="btn-primary w-100">Save Manual Order</button>
             </form>
           </div>
         </div>

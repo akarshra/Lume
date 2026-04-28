@@ -30,15 +30,11 @@ const Customizer3D = ({ colors }) => {
         
         <Float speed={2.5} rotationIntensity={0.6} floatIntensity={1.2}>
           <group position={[0, -0.5, 0]}>
-            {/* Center Core */}
             <RibbonPetal color={baseColor} position={[0, 0.5, 0]} rotation={[0, 0, 0]} scale={[0.8, 0.8, 0.8]}/>
-            
-            {/* Outer Petals */}
             <RibbonPetal color={baseColor} position={[0, 0, 0.5]} rotation={[0.4, 0, 0]} />
             <RibbonPetal color={baseColor} position={[0, 0, -0.5]} rotation={[-0.4, 0, 0]} />
             <RibbonPetal color={baseColor} position={[0.5, 0, 0]} rotation={[0, 0, -0.4]} />
             <RibbonPetal color={baseColor} position={[-0.5, 0, 0]} rotation={[0, 0, 0.4]} />
-            
             <RibbonPetal color={baseColor} position={[0.35, -0.2, 0.35]} rotation={[0.4, 0, -0.4]} />
             <RibbonPetal color={baseColor} position={[-0.35, -0.2, 0.35]} rotation={[0.4, 0, 0.4]} />
             <RibbonPetal color={baseColor} position={[0.35, -0.2, -0.35]} rotation={[-0.4, 0, -0.4]} />

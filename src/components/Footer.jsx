@@ -23,7 +23,7 @@ const Footer = () => {
     <footer className='lume-footer'>
       <div className='container footer-grid'>
         <div className='footer-column brand-info'>
-          <span className='footer-logo'>Lumé</span>
+          <span className='footer-logo'>Lume</span>
           <p className='artisan-bio'>Hand-folding satin into everlasting memories. Every petal is a testament to the slow, intentional craft of our Kishanganj studio.</p>
           <div className='social-links'>
             <a href='https://www.instagram.com/l_u_m_eest._2026/' target='_blank' rel='noreferrer' className='social-icon' title='Instagram'><Instagram size={18}/></a>

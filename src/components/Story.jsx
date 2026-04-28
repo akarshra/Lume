@@ -33,7 +33,7 @@ const Story = () => {
           <div className="story-content fade-up">
             <h2 className="title-secondary">Our Journey</h2>
             <p className="story-lead">
-              Born from a passion for timeless beauty, Lumé brings elegant, handmade 
+              Born from a passion for timeless beauty, Lume brings elegant, handmade 
               ribbon bouquets to life, right from the heart of Kishanganj, Bihar.
             </p>
 
@@ -42,7 +42,7 @@ const Story = () => {
                 <div className="timeline-marker"></div>
                 <span className="date">January 2026</span>
                 <h4>The First Fold</h4>
-                <p>Lumé was founded in a small Kishanganj workshop. We spent our first month perfecting the "Satin Bloom" technique—sculpting ribbons into roses that never wilt.</p>
+                <p>Lume was founded in a small Kishanganj workshop. We spent our first month perfecting the "Satin Bloom" technique—sculpting ribbons into roses that never wilt.</p>
               </div>
               
               <div className="timeline-item">

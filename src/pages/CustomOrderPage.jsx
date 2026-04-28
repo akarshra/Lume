@@ -6,6 +6,7 @@ import { addOrder } from '../services/api';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import StripeCheckoutForm from '../components/StripeCheckoutForm';
+import Customizer3D from '../components/Customizer3D';
 import './CustomOrderPage.css';
 
 const stripePromise = loadStripe('pk_test_51T4bcOLkWChg5JeJdTPGkNttxonAEO6SuRYpKMuxggvRKXRXRCbaxwgp9wBwwy7anqdJrck1wPNXmXE9vekGtZk700Ob1bx4pL');
@@ -17,6 +18,7 @@ const CustomOrderPage = () => {
     name: '',
     email: '',
     phone: '',
+    address: '',
     occasion: 'Birthday',
     colors: '',
     size: 'Medium (15-20 roses)',
@@ -66,6 +68,7 @@ const CustomOrderPage = () => {
       customer: formData.name,
       email: formData.email,
       phone: formData.phone,
+      address: formData.address,
       item: `Custom: ${formData.size}`,
       amount: 1000,
       status: "Paid",
@@ -117,6 +120,8 @@ const CustomOrderPage = () => {
               </Elements>
             </div>
           ) : (
+            <>
+             <Customizer3D colors={formData.colors} />
              <form className="custom-form">
                <div className="form-row">
                  <div className="form-group">
@@ -134,6 +139,11 @@ const CustomOrderPage = () => {
                    <label htmlFor="phone">WhatsApp Number</label>
                    <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} required placeholder="+91 98765 43210"/>
                  </div>
+               </div>
+
+               <div className="form-group">
+                 <label htmlFor="address">Full Delivery Address</label>
+                 <textarea id="address" name="address" value={formData.address} onChange={handleChange} required rows="2" placeholder="Street, Apartment, City, PIN Code..."></textarea>
                </div>
 
                <div className="form-row">
@@ -184,6 +194,7 @@ const CustomOrderPage = () => {
                  
                </div>
              </form>
+            </>
           )}
         </div>
       </div>

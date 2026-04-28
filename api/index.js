@@ -14,12 +14,9 @@ dotenv.config({ path: join(__dirname, '../.env.local') });
 import OpenAI from 'openai';
 import { Resend } from 'resend';
 
-const openaiKeyValid = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.length > 5;
-const openai = openaiKeyValid ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
-
-if (!openaiKeyValid) {
-  console.warn("WARNING: OPENAI_API_KEY is missing. Smart chatbot endpoints will be disabled.");
-}
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_fallback');
 
@@ -109,7 +106,7 @@ app.post('/api/send-email', async (req, res) => {
     const { to, subject, html } = req.body;
     
     const { data, error } = await resend.emails.send({
-      from: 'Lumé Orders <onboarding@resend.dev>', // Default testing sender
+      from: 'Lume Orders <onboarding@resend.dev>', // Default testing sender
       to: [to],
       subject: subject,
       html: html,
@@ -151,7 +148,7 @@ app.post('/api/update-status', async (req, res) => {
       const msg = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
            <h2 style="color: #9b1b30;">Hello ${order.customer},</h2>
-           <p>We wanted to let you know that your Lumé order status has been updated!</p>
+           <p>We wanted to let you know that your Lume order status has been updated!</p>
            <div style="padding: 16px; background-color: #f8fafc; border-radius: 8px; margin: 20px 0;">
              <p style="margin: 0; font-size: 1.2rem;"><strong>Order Status: <span style="color: #3b82f6;">${status}</span></strong></p>
            </div>
@@ -173,14 +170,14 @@ app.post('/api/update-status', async (req, res) => {
            </table>
            <p>If you have any questions, feel free to reply to this email or reach out to us on Instagram.</p>
            <br/>
-           <p>Best,<br/><strong>The Lumé Artisans</strong></p>
+           <p>Best,<br/><strong>The Lume Artisans</strong></p>
         </div>
       `;
 
       await resend.emails.send({
-        from: 'Lumé Orders <onboarding@resend.dev>',
+        from: 'Lume Orders <onboarding@resend.dev>',
         to: [order.email],
-        subject: `Artisan Update: Your Lumé order is now ${status}`,
+        subject: `Artisan Update: Your Lume order is now ${status}`,
         html: msg,
       });
     }
@@ -193,9 +190,6 @@ app.post('/api/update-status', async (req, res) => {
 });
 
 app.post('/api/generate-campaign', async (req, res) => {
-  if (!openai) {
-    return res.status(503).json({ error: { message: "AI Marketing Suite is offline because the OpenAI API Key is missing from the environment." } });
-  }
   try {
     const { prompt } = req.body;
     
@@ -205,7 +199,7 @@ app.post('/api/generate-campaign', async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are an expert AI marketing assistant for Lumé Artisans, a luxury ribbon rose boutique. Given a simple prompt, generate a promotional campaign including: an engaging email subject, HTML email body (styled beautifully with inline CSS matching luxury branding, using #9b1b30 and #333), an optimal discount amount (number, usually 10-20), a snappy promo code string (e.g. SPRINGLOVE15)."
+          content: "You are an expert AI marketing assistant for Lume Artisans, a luxury ribbon rose boutique. Given a simple prompt, generate a promotional campaign including: an engaging email subject, HTML email body (styled beautifully with inline CSS matching luxury branding, using #9b1b30 and #333), an optimal discount amount (number, usually 10-20), a snappy promo code string (e.g. SPRINGLOVE15)."
         },
         {
           role: "user",
@@ -242,13 +236,10 @@ app.post('/api/generate-campaign', async (req, res) => {
 });
 
 app.post('/api/chat', async (req, res) => {
-  if (!openai) {
-    return res.status(503).json({ error: { message: "Intelligent Assistant is currently offline. Please contact human support." } });
-  }
   try {
     const { messages } = req.body; // array of {role, content}
     
-    const systemPrompt = `You are Lumé, an elegant Intelligent Support Assistant for Lumé Artisans, a luxury ribbon rose boutique. 
+    const systemPrompt = `You are Lume, an elegant Intelligent Support Assistant for Lume Artisans, a luxury ribbon rose boutique. 
 - You help customers track orders, get recommendations, and understand store policies.
 - Custom/bespoke orders take 3-5 days to craft.
 - Shipping is usually 3-5 business days. 
@@ -338,75 +329,6 @@ Be polite, sophisticated, and concise.`;
     res.json({ message });
   } catch (error) {
     console.error("Chat error:", error);
-    res.status(500).json({ error: { message: error.message } });
-  }
-});
-
-// --- Phase 2: CRON Job Automation (Abandoned Cart & Supplier Alerts) ---
-app.all('/api/cron-tasks', async (req, res) => {
-  // 1. Verify Vercel Cron Request
-  const authHeader = req.headers.authorization;
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return res.status(401).json({ error: { message: "Unauthorized Cron Access" } });
-  }
-
-  const results = { status: "success", tasksRun: [] };
-
-  try {
-    // 2. Abandoned Cart / Stale Order Recovery
-    // For demonstration, we target 'Pending' orders created more than 2 hours ago
-    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
-    const { data: staleOrders } = await supabase.from('orders')
-      .select('*')
-      .eq('status', 'Pending')
-      .lt('created_at', twoHoursAgo);
-
-    if (staleOrders && staleOrders.length > 0) {
-      if (openai) {
-        for (const order of staleOrders) {
-          if (!order.email) continue;
-          const prompt = `Write a short, luxurious 2-line abandoned cart reminder for ${order.customer} who left ${order.item} behind in their Lume cart.`;
-          const completion = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [{ role: "system", content: "You are Lume, a premium artisan gifting brand." }, { role: "user", content: prompt }]
-          });
-          const message = completion.choices[0].message.content;
-          
-          await resend.emails.send({
-            from: "Lume Cart Recovery <recovery@resend.dev>",
-            to: order.email,
-            subject: "Your curated Lume bouquet is waiting...",
-            html: `<div style="font-family: Inter, sans-serif; padding: 20px;">
-                    <p>${message}</p>
-                    <a href="https://lumee-five.vercel.app/checkout" style="background:#db2777;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;margin-top:10px;">Return to Checkout</a>
-                   </div>`
-          });
-        }
-      }
-      results.tasksRun.push(`Emailed ${staleOrders.length} abandoned cart users.`);
-    }
-
-    // 3. Low Stock Supplier Alerts
-    const { data: lowStockItems } = await supabase.from('products').select('*').eq('inStock', false);
-    if (lowStockItems && lowStockItems.length > 0) {
-      const itemsListStr = lowStockItems.map(i => i.name).join(", ");
-      await resend.emails.send({
-        from: "Lume Automation <admin@resend.dev>",
-        to: process.env.VITE_ADMIN_EMAIL || "akarshraj070@gmail.com",
-        subject: "🚨 LOW STOCK ALERT - IMMEDIATE SUPPLIER ACTION REQUIRED",
-        html: `<div style="font-family: sans-serif; background: #fffbe4; padding: 20px; border-left: 4px solid #d97706;">
-                <h3 style="margin-top:0;">Inventory Depleted</h3>
-                <p>The following items are completely out of stock:</p>
-                <strong>${itemsListStr}</strong>
-                <p>Please initiate a wholesale replenishment via the admin panel immediately.</p>
-               </div>`
-      });
-      results.tasksRun.push(`Sent low-stock alert for ${lowStockItems.length} items.`);
-    }
-
-    res.json(results);
-  } catch (error) {
-    console.error("Cron Task Error:", error);
     res.status(500).json({ error: { message: error.message } });
   }
 });

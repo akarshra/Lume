@@ -68,13 +68,13 @@ const CountdownTimer = () => {
 };
 const Home = () => (
   <div className="home-page fade-in">
-    <Helmet><title>Lumé | Where Ribbons Bloom Into Roses</title><meta name="description" content="Handcrafted ribbon rose bouquets from Kishanganj, Bihar. Everlasting artisan flowers."/></Helmet>
+    <Helmet><title>Lume | Where Ribbons Bloom Into Roses</title><meta name="description" content="Handcrafted ribbon rose bouquets from Kishanganj, Bihar. Everlasting artisan flowers."/></Helmet>
     <Hero />
     <section className="home-stats-section section" style={{ background: "var(--surface-color)" }}>
       <div className="container">
         <div className="text-center" style={{ marginBottom: "60px" }}>
           <div className="artisan-badge"><Sparkles size={14} /> Est. January 2026</div>
-          <h2 className="title-secondary reveal-up">The Lumé Experience</h2>
+          <h2 className="title-secondary reveal-up">The Lume Experience</h2>
           <p className="subtitle reveal-up" style={{ maxWidth: "560px", margin: "0 auto" }}>Where delicate ribbons are transformed into everlasting blooming roses.</p>
         </div>
         <div className="stats-features-grid">
@@ -100,7 +100,7 @@ const Home = () => (
     <section className="features-section section">
       <div className="container">
         <div className="text-center" style={{ marginBottom: "60px" }}>
-          <h2 className="title-secondary reveal-up">Why Choose Lumé?</h2>
+          <h2 className="title-secondary reveal-up">Why Choose Lume?</h2>
           <p className="subtitle reveal-up" style={{ maxWidth: "500px", margin: "0 auto" }}>Every detail is crafted with intention and care.</p>
         </div>
         <div className="features-grid">
