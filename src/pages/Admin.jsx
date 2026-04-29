@@ -14,7 +14,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import './Admin.css';
-
+import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, Line, BarChart, Bar } from 'recharts';
 const ADMIN_EMAIL = 'akarshsrivastava322@gmail.com';
 
 const Admin = () => {
@@ -797,7 +797,7 @@ const Admin = () => {
                   <div className="content-card" style={{marginBottom: '40px'}}>
                     <table className="admin-table">
                       <thead><tr><th>Name</th><th>Email / Phone</th><th>Details</th><th>Date</th><th>Action</th></tr></thead>
-                      <tbody>{weddingInquiries.map((ct,i)=>(<tr key={ct.id || i} style={{ opacity: ct.status === 'Read' ? 0.6 : 1 }}><td><strong>{ct.name}</strong></td><td>{ct.email||'-'}<br/><small>{ct.phone}</small></td><td style={{maxWidth:'320px',fontSize:'0.82rem',color:'var(--text-muted)'}}>{ct.message.replace('Wedding/Bulk Inquiry | ', '')}</td><td style={{fontSize:'0.8rem',whiteSpace:'nowrap'}}>{ct.created_at?new Date(ct.created_at).toLocaleDateString('en-IN'):'-'}</td>
+                      <tbody>{weddingInquiries.map((ct,i)=>(<tr key={'wed-' + (ct.id || i)} style={{ opacity: ct.status === 'Read' ? 0.6 : 1 }}><td><strong>{ct.name}</strong></td><td>{ct.email||'-'}<br/><small>{ct.phone}</small></td><td style={{maxWidth:'320px',fontSize:'0.82rem',color:'var(--text-muted)'}}>{ct.message.replace('Wedding/Bulk Inquiry | ', '')}</td><td style={{fontSize:'0.8rem',whiteSpace:'nowrap'}}>{ct.created_at?new Date(ct.created_at).toLocaleDateString('en-IN'):'-'}</td>
                         <td><div style={{display:'flex', gap:'6px'}}><button onClick={() => handleMarkInquiryRead(ct.id, ct.status)} title="Mark as Read/Unread" className="btn-secondary" style={{padding:'4px 8px'}}><CheckCircle size={14}/></button> <button onClick={() => handleDeleteInquiry(ct.id)} title="Delete Inquiry" className="btn-icon-delete"><Trash2 size={14}/></button></div></td>
                       </tr>))}</tbody>
                     </table>
@@ -809,7 +809,7 @@ const Admin = () => {
                   <div className="content-card">
                     <table className="admin-table">
                       <thead><tr><th>Name</th><th>Email / Phone</th><th>Message</th><th>Date</th><th>Action</th></tr></thead>
-                      <tbody>{directInquiries.map((ct,i)=>(<tr key={ct.id || i} style={{ opacity: ct.status === 'Read' ? 0.6 : 1 }}><td><strong>{ct.name}</strong></td><td>{ct.email||'-'}<br/><small>{ct.phone}</small></td><td style={{maxWidth:'320px',fontSize:'0.82rem',color:'var(--text-muted)'}}>{ct.message}</td><td style={{fontSize:'0.8rem',whiteSpace:'nowrap'}}>{ct.created_at?new Date(ct.created_at).toLocaleDateString('en-IN'):'-'}</td>
+                      <tbody>{directInquiries.map((ct,i)=>(<tr key={'dir-' + (ct.id || i)} style={{ opacity: ct.status === 'Read' ? 0.6 : 1 }}><td><strong>{ct.name}</strong></td><td>{ct.email||'-'}<br/><small>{ct.phone}</small></td><td style={{maxWidth:'320px',fontSize:'0.82rem',color:'var(--text-muted)'}}>{ct.message}</td><td style={{fontSize:'0.8rem',whiteSpace:'nowrap'}}>{ct.created_at?new Date(ct.created_at).toLocaleDateString('en-IN'):'-'}</td>
                         <td><div style={{display:'flex', gap:'6px'}}><button onClick={() => handleMarkInquiryRead(ct.id, ct.status)} title="Mark as Read/Unread" className="btn-secondary" style={{padding:'4px 8px'}}><CheckCircle size={14}/></button> <button onClick={() => handleDeleteInquiry(ct.id)} title="Delete Inquiry" className="btn-icon-delete"><Trash2 size={14}/></button></div></td>
                       </tr>))}</tbody>
                     </table>
